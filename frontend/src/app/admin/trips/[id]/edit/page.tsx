@@ -28,15 +28,15 @@ export default function EditTripPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const catRes = await fetch("http://localhost:5000/api/categories");
-        const destRes = await fetch("http://localhost:5000/api/destinations");
+        const catRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`);
+        const destRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations`);
         if (catRes.ok) setCategories(await catRes.json());
         if (destRes.ok) setDestinations(await destRes.json());
 
         // We fetch trip by id... wait, our API fetches by slug usually, but let's see if we can fetch all and filter or fetch directly by slug. 
         // We only have `getTripBySlug`. But we don't have the slug, we have the ID!
         // Actually, let's fetch all and find it, it's an admin panel so performance is fine.
-        const tripsRes = await fetch("http://localhost:5000/api/trips");
+        const tripsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips`);
         if (tripsRes.ok) {
           const trips = await tripsRes.json();
           const trip = trips.find((t: any) => t.id === id);
@@ -77,7 +77,7 @@ export default function EditTripPage() {
       
       const { imageUrl, ...prismaData } = payload;
 
-      const res = await fetch(`http://localhost:5000/api/trips/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

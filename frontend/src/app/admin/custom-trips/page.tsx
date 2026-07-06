@@ -16,7 +16,7 @@ export default function AdminCustomTripsPage() {
     setSending(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`http://localhost:5000/api/custom-trips/${respondModal.reqId}/respond`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/custom-trips/${respondModal.reqId}/respond`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export default function AdminCustomTripsPage() {
     const fetchRequests = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const res = await fetch("http://localhost:5000/api/custom-trips", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/custom-trips`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }

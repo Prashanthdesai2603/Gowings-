@@ -25,8 +25,8 @@ export default function AddNewTripPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const catRes = await fetch("http://localhost:5000/api/categories");
-        const destRes = await fetch("http://localhost:5000/api/destinations");
+        const catRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`);
+        const destRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations`);
         if (catRes.ok) setCategories(await catRes.json());
         if (destRes.ok) setDestinations(await destRes.json());
       } catch (error) {
@@ -54,7 +54,7 @@ export default function AddNewTripPage() {
       // Remove imageUrl so Prisma doesn't throw Unknown argument error
       const { imageUrl, ...prismaData } = payload;
 
-      const res = await fetch("http://localhost:5000/api/trips", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

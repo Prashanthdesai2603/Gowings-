@@ -28,16 +28,16 @@ export default function CustomerDashboard() {
       }
       try {
         const [userRes, bookingsRes, customTripsRes, inquiriesRes] = await Promise.all([
-          fetch("http://localhost:5000/api/auth/me", {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch("http://localhost:5000/api/bookings/my-bookings", {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/my-bookings`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch("http://localhost:5000/api/custom-trips/my-requests", {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/custom-trips/my-requests`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch("http://localhost:5000/api/contact/my-requests", {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/my-requests`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -72,7 +72,7 @@ export default function CustomerDashboard() {
     setIsUpdating(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/auth/profile", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: editName, phone: editPhone })
@@ -101,7 +101,7 @@ export default function CustomerDashboard() {
     setIsUpdatingPassword(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/auth/password", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ currentPassword, newPassword })

@@ -22,7 +22,7 @@ export default function AddNewDestinationPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:5000/api/destinations", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

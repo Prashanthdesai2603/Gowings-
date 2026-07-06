@@ -10,7 +10,7 @@ export default function AdminDestinationsPage() {
 
   const fetchDestinations = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/destinations");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations`);
       if (res.ok) {
         const data = await res.json();
         setDestinations(data);
@@ -30,7 +30,7 @@ export default function AdminDestinationsPage() {
     if (!confirm("Are you sure you want to delete this destination?")) return;
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`http://localhost:5000/api/destinations/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

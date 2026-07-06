@@ -16,7 +16,7 @@ export default function AdminInquiriesPage() {
     setSending(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`http://localhost:5000/api/contact/${respondModal.reqId}/respond`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${respondModal.reqId}/respond`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export default function AdminInquiriesPage() {
     const fetchInquiries = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const res = await fetch("http://localhost:5000/api/contact", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }

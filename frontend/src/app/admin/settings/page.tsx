@@ -11,7 +11,7 @@ export default function AdminSettingsPage() {
   const fetchSettings = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:5000/api/admin/settings", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
@@ -38,7 +38,7 @@ export default function AdminSettingsPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:5000/api/admin/settings", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`, {
         method: "PUT",
         headers: { 
           "Authorization": `Bearer ${token}`,

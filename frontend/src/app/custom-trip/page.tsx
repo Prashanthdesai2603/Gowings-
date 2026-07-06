@@ -29,7 +29,7 @@ export default function CustomTripPage() {
     try {
       const dates = formData.startDate ? `Start: ${formData.startDate}, Duration: ${formData.duration} days` : (formData.duration ? `Duration: ${formData.duration} days` : 'Flexible');
       
-      const res = await fetch("http://localhost:5000/api/custom-trips", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/custom-trips`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

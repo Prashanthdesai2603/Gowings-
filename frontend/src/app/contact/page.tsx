@@ -26,7 +26,7 @@ export default function ContactPage() {
         message: `Subject: ${formData.subject}\n\nMessage: ${formData.message}`
       };
 
-      const res = await fetch("http://localhost:5000/api/contact", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

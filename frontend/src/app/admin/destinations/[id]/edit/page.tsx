@@ -23,7 +23,7 @@ export default function EditDestinationPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/destinations");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations`);
         if (res.ok) {
           const destinations = await res.json();
           const dest = destinations.find((d: any) => d.id === id);
@@ -54,7 +54,7 @@ export default function EditDestinationPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`http://localhost:5000/api/destinations/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

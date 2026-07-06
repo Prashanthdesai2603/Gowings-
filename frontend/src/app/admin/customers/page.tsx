@@ -11,7 +11,7 @@ export default function AdminCustomersPage() {
   const fetchCustomers = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:5000/api/admin/customers", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/customers`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {

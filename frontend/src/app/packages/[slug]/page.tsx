@@ -95,7 +95,7 @@ export default function PackageDetailsPage() {
     
     setIsBooking(true);
     try {
-      const res = await fetch("http://localhost:5000/api/bookings", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -128,7 +128,7 @@ export default function PackageDetailsPage() {
   useEffect(() => {
     const fetchPackage = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/trips/${slug}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${slug}`);
         if (res.ok) {
           const data = await res.json();
           setPkg(data);

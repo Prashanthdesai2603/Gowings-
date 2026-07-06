@@ -12,7 +12,7 @@ export default function AdminPaymentsPage() {
   const fetchPayments = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:5000/api/admin/payments", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/payments`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
@@ -33,7 +33,7 @@ export default function AdminPaymentsPage() {
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`http://localhost:5000/api/admin/payments/${id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/payments/${id}/status`, {
         method: "PATCH",
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -124,7 +124,7 @@ export default function AdminPaymentsPage() {
                         } else if (payment.screenshotUrl === 'simulated_card_payment') {
                           alert("This was a simulated card payment. No screenshot required.");
                         } else {
-                          const url = payment.screenshotUrl.startsWith('http') ? payment.screenshotUrl : `http://localhost:5000${payment.screenshotUrl.startsWith('/') ? '' : '/'}${payment.screenshotUrl}`;
+                          const url = payment.screenshotUrl.startsWith('http') ? payment.screenshotUrl : `${process.env.NEXT_PUBLIC_API_URL}${payment.screenshotUrl.startsWith('/') ? '' : '/'}${payment.screenshotUrl}`;
                           window.open(url, '_blank');
                         }
                       }}

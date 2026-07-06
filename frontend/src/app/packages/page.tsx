@@ -14,7 +14,7 @@ export default function PackagesPage() {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/trips");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips`);
         if (res.ok) {
           const data = await res.json();
           setPackages(data);
