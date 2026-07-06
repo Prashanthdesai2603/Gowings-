@@ -147,6 +147,7 @@ model ContactRequest {
   phone     String?
   message   String
   status    String   @default("PENDING") // PENDING, RESPONDED
+  responseMessage String? @db.Text
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -163,6 +164,7 @@ model CustomizedTripRequest {
   budget       String
   requirements String
   status       String   @default("PENDING") // PENDING, PROPOSED, BOOKED
+  responseMessage String? @db.Text
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

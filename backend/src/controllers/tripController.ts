@@ -4,7 +4,9 @@ import prisma from '../config/db';
 // Get all trips
 export const getTrips = async (req: Request, res: Response) => {
   try {
-    const { category, destination, featured } = req.query;
+    const category = typeof req.query.category === 'string' ? req.query.category : undefined;
+    const destination = typeof req.query.destination === 'string' ? req.query.destination : undefined;
+    const featured = typeof req.query.featured === 'string' ? req.query.featured : undefined;
     
     const filter: any = {};
     if (category) filter.category = { name: category };
@@ -27,7 +29,7 @@ export const getTrips = async (req: Request, res: Response) => {
 // Get single trip by slug
 export const getTripBySlug = async (req: Request, res: Response) => {
   try {
-    const { slug } = req.params;
+    const slug = req.params.slug as string;
     const trip = await prisma.trip.findUnique({
       where: { slug },
       include: {
@@ -61,7 +63,7 @@ export const createTrip = async (req: Request, res: Response) => {
 // Update an existing trip (Admin only)
 export const updateTrip = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const data = req.body;
     const trip = await prisma.trip.update({
       where: { id },
@@ -76,7 +78,7 @@ export const updateTrip = async (req: Request, res: Response) => {
 // Delete a trip (Admin only)
 export const deleteTrip = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.trip.delete({
       where: { id }
     });

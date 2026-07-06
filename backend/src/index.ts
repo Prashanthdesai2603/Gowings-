@@ -15,6 +15,7 @@ import destinationRoutes from './routes/destinationRoutes';
 import adminRoutes from './routes/adminRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import contactRoutes from './routes/contactRoutes';
+import customTripRoutes from './routes/customTripRoutes';
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -28,6 +29,7 @@ app.use('/api/destinations', destinationRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/custom-trips', customTripRoutes);
 
 // Basic health check route
 app.get('/api/health', (req, res) => {

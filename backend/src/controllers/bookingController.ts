@@ -66,7 +66,7 @@ export const getAllBookings = async (req: Request, res: Response) => {
 // Update booking status (Admin)
 export const updateBookingStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status } = req.body;
 
     const booking = await prisma.booking.update({

@@ -46,6 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Manage Trips", href: "/admin/trips", icon: Plane },
     { name: "Manage Destinations", href: "/admin/destinations", icon: MapPin },
     { name: "Verify Payments", href: "/admin/payments", icon: CreditCard },
+    { name: "Custom Trips", href: "/admin/custom-trips", icon: Plane },
     { name: "Customers", href: "/admin/customers", icon: Users },
     { name: "Inquiries", href: "/admin/inquiries", icon: MessageSquare },
     { name: "Company Settings", href: "/admin/settings", icon: Settings },

@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const tripController_1 = require("../controllers/tripController");
+const auth_1 = require("../middlewares/auth");
+const router = (0, express_1.Router)();
+router.get('/', tripController_1.getTrips);
+router.get('/:slug', tripController_1.getTripBySlug);
+router.post('/', auth_1.authenticate, auth_1.authorizeAdmin, tripController_1.createTrip);
+router.put('/:id', auth_1.authenticate, auth_1.authorizeAdmin, tripController_1.updateTrip);
+router.delete('/:id', auth_1.authenticate, auth_1.authorizeAdmin, tripController_1.deleteTrip);
+exports.default = router;

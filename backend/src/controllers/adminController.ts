@@ -103,7 +103,7 @@ export const getPayments = async (req: Request, res: Response) => {
 
 export const updatePaymentStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status } = req.body;
     
     if (!['PENDING', 'VERIFIED', 'REJECTED'].includes(status)) {

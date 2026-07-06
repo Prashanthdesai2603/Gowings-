@@ -1,11 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageSquare, Mail, Phone, Calendar } from "lucide-react";
+import { MessageSquare, Mail, Phone, Calendar, Send, X } from "lucide-react";
 
 export default function AdminInquiriesPage() {
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [respondModal, setRespondModal] = useState({ isOpen: false, reqId: "", email: "" });
+  const [responseMsg, setResponseMsg] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSendResponse = async () => {
+    if (!responseMsg.trim()) return;
+    setSending(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`http://localhost:5000/api/contact/${respondModal.reqId}/respond`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ message: responseMsg })
+      });
+      if (res.ok) {
+        setInquiries(inquiries.map(r => r.id === respondModal.reqId ? { ...r, status: "RESPONDED" } : r));
+        setRespondModal({ isOpen: false, reqId: "", email: "" });
+        setResponseMsg("");
+      } else {
+        alert("Failed to send response");
+      }
+    } catch (e) {
+      console.error("Error sending response", e);
+      alert("Something went wrong");
+    } finally {
+      setSending(false);
+    }
+  };
 
   useEffect(() => {
     const fetchInquiries = async () => {
@@ -55,17 +87,31 @@ export default function AdminInquiriesPage() {
                       {inquiry.phone && <div className="flex items-center gap-1"><Phone size={14} /> {inquiry.phone}</div>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <Calendar size={14} /> 
-                    {new Date(inquiry.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric', month: 'short', day: 'numeric',
-                      hour: '2-digit', minute: '2-digit'
-                    })}
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <Calendar size={14} /> 
+                        {new Date(inquiry.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric', month: 'short', day: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                        })}
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${inquiry.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                        {inquiry.status || 'PENDING'}
+                      </span>
+                    </div>
                 </div>
                 
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-slate-700 whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-slate-700 whitespace-pre-wrap font-mono text-sm leading-relaxed mb-4">
                   {inquiry.message}
+                </div>
+
+                <div className="flex justify-end mt-4 pt-4 border-t border-slate-100">
+                  <button 
+                    onClick={() => setRespondModal({ isOpen: true, reqId: inquiry.id, email: inquiry.email })}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition"
+                  >
+                    <Send size={16} /> Send Reply
+                  </button>
                 </div>
               </div>
             ))}
@@ -78,6 +124,55 @@ export default function AdminInquiriesPage() {
           </div>
         )}
       </div>
+
+      {/* Respond Modal */}
+      {respondModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-slate-800">Send Reply</h3>
+              <button 
+                onClick={() => setRespondModal({ isOpen: false, reqId: "", email: "" })}
+                className="p-1 rounded-lg hover:bg-slate-100 transition"
+              >
+                <X size={20} className="text-slate-500" />
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <div className="text-sm font-medium text-slate-600 mb-1">To:</div>
+              <div className="text-sm text-slate-800 font-mono bg-slate-50 p-2 rounded border border-slate-100">{respondModal.email}</div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Message</label>
+              <textarea 
+                rows={6}
+                value={responseMsg}
+                onChange={(e) => setResponseMsg(e.target.value)}
+                className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none text-sm"
+                placeholder="Type your reply here..."
+              ></textarea>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setRespondModal({ isOpen: false, reqId: "", email: "" })}
+                className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSendResponse}
+                disabled={sending || !responseMsg.trim()}
+                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              >
+                {sending ? "Sending..." : <><Send size={18} /> Send Reply</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

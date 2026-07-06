@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, PlaneTakeoff, Settings, LogOut, CheckCircle, Clock } from "lucide-react";
+import { User, PlaneTakeoff, Settings, LogOut, CheckCircle, Clock, Plane, Calendar, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function CustomerDashboard() {
@@ -27,11 +27,17 @@ export default function CustomerDashboard() {
         return;
       }
       try {
-        const [userRes, bookingsRes] = await Promise.all([
+        const [userRes, bookingsRes, customTripsRes, inquiriesRes] = await Promise.all([
           fetch("http://localhost:5000/api/auth/me", {
             headers: { Authorization: `Bearer ${token}` }
           }),
           fetch("http://localhost:5000/api/bookings/my-bookings", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch("http://localhost:5000/api/custom-trips/my-requests", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch("http://localhost:5000/api/contact/my-requests", {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -39,8 +45,10 @@ export default function CustomerDashboard() {
         if (userRes.ok && bookingsRes.ok) {
           const userData = await userRes.json();
           const bookingsData = await bookingsRes.json();
+          const customTripsData = customTripsRes.ok ? await customTripsRes.json() : { requests: [] };
+          const inquiriesData = inquiriesRes.ok ? await inquiriesRes.json() : { requests: [] };
           
-          setUser({ ...userData, bookings: bookingsData });
+          setUser({ ...userData, bookings: bookingsData, customTrips: customTripsData.requests || [], inquiries: inquiriesData.requests || [] });
           setEditName(userData.name || "");
           setEditPhone(userData.phone || "");
         } else {
@@ -154,6 +162,18 @@ export default function CustomerDashboard() {
               <User size={20} /> Profile Settings
             </button>
             <button 
+              onClick={() => setActiveTab("custom-trips")}
+              className={`flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${activeTab === "custom-trips" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"}`}
+            >
+              <Plane size={20} /> Custom Trips
+            </button>
+            <button 
+              onClick={() => setActiveTab("inquiries")}
+              className={`flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${activeTab === "inquiries" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"}`}
+            >
+              <MessageSquare size={20} /> My Inquiries
+            </button>
+            <button 
               onClick={() => setActiveTab("settings")}
               className={`flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${activeTab === "settings" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"}`}
             >
@@ -206,6 +226,126 @@ export default function CustomerDashboard() {
                   <p className="text-gray-500 mb-6">You haven't booked any trips with us yet.</p>
                   <button onClick={() => router.push('/packages')} className="bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary/90 transition">
                     Explore Packages
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "custom-trips" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">My Custom Trip Requests</h2>
+              
+              {user.customTrips?.length > 0 ? (
+                <div className="space-y-6">
+                  {user.customTrips.map((trip: any) => (
+                    <div key={trip.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${trip.status === 'PROPOSED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                              {trip.status}
+                            </span>
+                            <span className="text-gray-400 text-sm flex items-center gap-1">
+                              <Calendar size={14} />
+                              {new Date(trip.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-800">{trip.destination}</h3>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <div className="text-gray-500 font-medium text-xs mb-1">Travelers</div>
+                          <div className="font-semibold text-gray-800">{trip.travelers}</div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <div className="text-gray-500 font-medium text-xs mb-1">Duration</div>
+                          <div className="font-semibold text-gray-800">{trip.dates}</div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <div className="text-gray-500 font-medium text-xs mb-1">Budget</div>
+                          <div className="font-semibold text-gray-800">{trip.budget ? `₹${trip.budget}` : 'N/A'}</div>
+                        </div>
+                      </div>
+
+                      {trip.responseMessage && (
+                        <div className="mt-4 bg-green-50/50 border border-green-100 rounded-xl p-5">
+                          <div className="flex items-center gap-2 font-semibold text-green-800 mb-2">
+                            <MessageSquare size={18} /> Admin Response
+                          </div>
+                          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                            {trip.responseMessage}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <Plane size={32} />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">No custom trips</h3>
+                  <p className="text-gray-500 mb-6">You haven't requested any custom trips yet.</p>
+                  <button onClick={() => router.push('/custom-trip')} className="bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary/90 transition">
+                    Request Custom Trip
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "inquiries" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">My Inquiries</h2>
+              
+              {user.inquiries?.length > 0 ? (
+                <div className="space-y-6">
+                  {user.inquiries.map((inquiry: any) => (
+                    <div key={inquiry.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${inquiry.status === 'RESPONDED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                              {inquiry.status || 'PENDING'}
+                            </span>
+                            <span className="text-gray-400 text-sm flex items-center gap-1">
+                              <Calendar size={14} />
+                              {new Date(inquiry.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-slate-700 whitespace-pre-wrap font-mono text-sm leading-relaxed mb-4">
+                        {inquiry.message}
+                      </div>
+
+                      {inquiry.responseMessage && (
+                        <div className="mt-4 bg-green-50/50 border border-green-100 rounded-xl p-5">
+                          <div className="flex items-center gap-2 font-semibold text-green-800 mb-2">
+                            <MessageSquare size={18} /> Admin Reply
+                          </div>
+                          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                            {inquiry.responseMessage}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <MessageSquare size={32} />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">No inquiries</h3>
+                  <p className="text-gray-500 mb-6">You haven't sent any inquiries yet.</p>
+                  <button onClick={() => router.push('/contact')} className="bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary/90 transition">
+                    Contact Us
                   </button>
                 </div>
               )}

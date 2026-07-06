@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { submitContact, getContacts } from '../controllers/contactController';
+import { submitContact, getContacts, respondToContactRequest, getMyContactRequests } from '../controllers/contactController';
 import { authenticate, authorizeAdmin } from '../middlewares/auth';
 
 const router = Router();
@@ -9,5 +9,11 @@ router.post('/', submitContact as any);
 
 // Admin route to get all contact requests
 router.get('/', authenticate as any, authorizeAdmin as any, getContacts as any);
+
+// User route to get their own contact requests
+router.get('/my-requests', authenticate as any, getMyContactRequests as any);
+
+// Admin route to respond to a contact request
+router.post('/:id/respond', authenticate as any, authorizeAdmin as any, respondToContactRequest as any);
 
 export default router;

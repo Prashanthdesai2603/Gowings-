@@ -6,15 +6,57 @@ import { useState } from "react";
 export default function CustomTripPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    travelers: 1,
+    destination: "",
+    duration: "",
+    startDate: "",
+    budget: "",
+    requirements: ""
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      const dates = formData.startDate ? `Start: ${formData.startDate}, Duration: ${formData.duration} days` : (formData.duration ? `Duration: ${formData.duration} days` : 'Flexible');
+      
+      const res = await fetch("http://localhost:5000/api/custom-trips", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          travelers: formData.travelers,
+          destination: formData.destination,
+          dates,
+          budget: formData.budget,
+          requirements: formData.requirements
+        }),
+      });
+
+      if (res.ok) {
+        setIsSubmitted(true);
+      } else {
+        alert("Failed to submit request. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting form", error);
+      alert("Something went wrong. Please try again later.");
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 1500);
+    }
   };
 
   if (isSubmitted) {
@@ -99,22 +141,22 @@ export default function CustomTripPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Full Name <span className="text-red-500">*</span></label>
-                    <input type="text" required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="John Doe" />
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="John Doe" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Email Address <span className="text-red-500">*</span></label>
-                    <input type="email" required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="john@example.com" />
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="john@example.com" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number <span className="text-red-500">*</span></label>
-                    <input type="tel" required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="+91 98765 43210" />
+                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="+91 98765 43210" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Number of Travelers</label>
-                    <input type="number" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="2" />
+                    <input type="number" name="travelers" value={formData.travelers} onChange={handleChange} min="1" className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="2" />
                   </div>
                 </div>
 
@@ -122,22 +164,22 @@ export default function CustomTripPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Dream Destination(s) <span className="text-red-500">*</span></label>
-                    <input type="text" required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="E.g. Bali, Paris, Kerala" />
+                    <input type="text" name="destination" value={formData.destination} onChange={handleChange} required className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="E.g. Bali, Paris, Kerala" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Duration (Days)</label>
-                    <input type="number" min="1" className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="7" />
+                    <input type="number" name="duration" value={formData.duration} onChange={handleChange} min="1" className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="7" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Approximate Start Date</label>
-                    <input type="date" className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition text-gray-600" />
+                    <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition text-gray-600" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Budget Per Person (₹)</label>
-                    <input type="number" step="1000" className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="50000" />
+                    <input type="number" name="budget" value={formData.budget} onChange={handleChange} step="1000" className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" placeholder="50000" />
                   </div>
                 </div>
 
@@ -145,6 +187,9 @@ export default function CustomTripPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Tell us more about your ideal trip</label>
                   <textarea 
                     rows={4} 
+                    name="requirements"
+                    value={formData.requirements}
+                    onChange={handleChange}
                     className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition resize-none" 
                     placeholder="Are you looking for adventure, relaxation, cultural experiences, or a mix of everything? Do you have any specific hotels or activities in mind?"
                   ></textarea>
