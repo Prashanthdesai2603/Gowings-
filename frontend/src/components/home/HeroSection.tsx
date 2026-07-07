@@ -7,11 +7,17 @@ import Link from "next/link";
 export default function HeroSection() {
   return (
     <div className="relative h-[80vh] min-h-[600px] w-full flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center z-0"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')" }}
-      >
+      {/* Background Video */}
+      <div className="absolute inset-0 z-0">
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/hero-video.mp4" type="video/mp4" />
+        </video>
         <div className="absolute inset-0 bg-black/40" />
       </div>
 
