@@ -7,20 +7,52 @@ export const getTrips = async (req: Request, res: Response) => {
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
     const destination = typeof req.query.destination === 'string' ? req.query.destination : undefined;
     const featured = typeof req.query.featured === 'string' ? req.query.featured : undefined;
+    const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+    const minPrice = typeof req.query.minPrice === 'string' ? parseFloat(req.query.minPrice) : undefined;
+    const maxPrice = typeof req.query.maxPrice === 'string' ? parseFloat(req.query.maxPrice) : undefined;
+    const page = typeof req.query.page === 'string' ? parseInt(req.query.page) : 1;
+    const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit) : 20;
     
     const filter: any = {};
     if (category) filter.category = { name: category };
     if (destination) filter.destination = { name: destination };
     if (featured === 'true') filter.isFeatured = true;
+    if (search) {
+      filter.OR = [
+        { title: { contains: search } },
+        { overview: { contains: search } }
+      ];
+    }
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter.price = {};
+      if (minPrice !== undefined) filter.price.gte = minPrice;
+      if (maxPrice !== undefined) filter.price.lte = maxPrice;
+    }
+
+    const skip = (page - 1) * limit;
 
     const trips = await prisma.trip.findMany({
       where: filter,
       include: {
         category: true,
         destination: true,
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.trip.count({ where: filter });
+
+    res.json({
+      data: trips,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
       }
     });
-    res.json(trips);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }

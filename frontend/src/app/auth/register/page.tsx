@@ -26,7 +26,9 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || data.message || 'Registration failed');
+        const errorMessage = typeof data.error === 'string' ? data.error : 
+                             (data.message || 'Registration failed');
+        throw new Error(errorMessage);
       }
 
       // Handle successful registration (e.g., save token, redirect)

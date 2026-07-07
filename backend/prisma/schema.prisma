@@ -59,6 +59,22 @@ model Trip {
   destinationId String
   destination   Destination @relation(fields: [destinationId], references: [id])
 
+  duration           String?
+  startingCity       String?
+  fullDescription    String?  @db.Text
+  thingsToCarry      Json?
+  pickupPoint        String?
+  dropPoint          String?
+  transportation     String?
+  accommodation      String?
+  meals              String?
+  bestTime           String?
+  difficulty         String?
+  seoTitle           String?
+  seoDescription     String?
+  faq                Json?
+  cancellationPolicy String?  @db.Text
+
   bookings      Booking[]
   reviews       Review[]
 

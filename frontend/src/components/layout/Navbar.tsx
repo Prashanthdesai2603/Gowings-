@@ -38,7 +38,7 @@ export default function Navbar() {
     <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${navClasses}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.jpeg" alt="Gowings Logo" className="h-14 md:h-16 w-auto object-contain rounded-md" />
+          <img src="/LOGO.png" alt="Gowings Logo" className="h-14 md:h-16 w-auto object-contain rounded-md" />
         </Link>
         
         {/* Desktop Nav */}

@@ -25,7 +25,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || data.message || 'Login failed');
+        const errorMessage = typeof data.error === 'string' ? data.error : 
+                             (data.message || 'Login failed');
+        throw new Error(errorMessage);
       }
 
       // Handle successful login (e.g., save token, redirect)

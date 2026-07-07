@@ -23,6 +23,19 @@ export default function EditTripPage() {
     categoryId: "",
     destinationId: "",
     imageUrl: ""
+    duration: "",
+    startingCity: "",
+    fullDescription: "",
+    pickupPoint: "",
+    dropPoint: "",
+    transportation: "",
+    accommodation: "",
+    meals: "",
+    bestTime: "",
+    difficulty: "",
+    seoTitle: "",
+    seoDescription: "",
+    cancellationPolicy: ""
   });
 
   useEffect(() => {
@@ -33,12 +46,10 @@ export default function EditTripPage() {
         if (catRes.ok) setCategories(await catRes.json());
         if (destRes.ok) setDestinations(await destRes.json());
 
-        // We fetch trip by id... wait, our API fetches by slug usually, but let's see if we can fetch all and filter or fetch directly by slug. 
-        // We only have `getTripBySlug`. But we don't have the slug, we have the ID!
-        // Actually, let's fetch all and find it, it's an admin panel so performance is fine.
-        const tripsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips`);
+        const tripsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips?limit=1000`);
         if (tripsRes.ok) {
-          const trips = await tripsRes.json();
+          const tripsData = await tripsRes.json();
+          const trips = tripsData.data || tripsData;
           const trip = trips.find((t: any) => t.id === id);
           if (trip) {
             setFormData({
@@ -49,7 +60,20 @@ export default function EditTripPage() {
               isFeatured: trip.isFeatured || false,
               categoryId: trip.categoryId || "",
               destinationId: trip.destinationId || "",
-              imageUrl: trip.images?.[0] || ""
+              imageUrl: trip.images?.[0] || "",
+              duration: trip.duration || "",
+              startingCity: trip.startingCity || "",
+              fullDescription: trip.fullDescription || "",
+              pickupPoint: trip.pickupPoint || "",
+              dropPoint: trip.dropPoint || "",
+              transportation: trip.transportation || "",
+              accommodation: trip.accommodation || "",
+              meals: trip.meals || "",
+              bestTime: trip.bestTime || "",
+              difficulty: trip.difficulty || "",
+              seoTitle: trip.seoTitle || "",
+              seoDescription: trip.seoDescription || "",
+              cancellationPolicy: trip.cancellationPolicy || ""
             });
           } else {
             alert("Trip not found");
@@ -137,6 +161,21 @@ export default function EditTripPage() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Duration</label>
+              <input type="text" name="duration" placeholder="e.g. 3 Days / 2 Nights" value={formData.duration} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Starting City</label>
+              <input type="text" name="startingCity" value={formData.startingCity} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Difficulty</label>
+              <input type="text" name="difficulty" placeholder="e.g. Easy, Moderate" value={formData.difficulty} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Image URL (Optional)</label>
@@ -165,9 +204,25 @@ export default function EditTripPage() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Pickup Point</label>
+              <input type="text" name="pickupPoint" value={formData.pickupPoint} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Drop Point</label>
+              <input type="text" name="dropPoint" value={formData.dropPoint} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Overview</label>
-            <textarea name="overview" required rows={4} value={formData.overview} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Overview (Short Description)</label>
+            <textarea name="overview" required rows={2} value={formData.overview} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Full Description</label>
+            <textarea name="fullDescription" rows={4} value={formData.fullDescription} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-primary/20"></textarea>
           </div>
 
           <div className="flex items-center gap-2">

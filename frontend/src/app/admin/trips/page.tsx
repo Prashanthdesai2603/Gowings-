@@ -12,8 +12,8 @@ export default function AdminTripsPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips`);
       if (res.ok) {
-        const data = await res.json();
-        setPackages(data);
+        const responseData = await res.json();
+        setPackages(responseData.data ? responseData.data : responseData);
       }
     } catch (error) {
       console.error("Failed to fetch trips:", error);

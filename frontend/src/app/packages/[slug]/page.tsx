@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { MapPin, Clock, Star, Calendar, CheckCircle, XCircle, ArrowLeft, Send } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Share2, Heart, MessageCircle, Info } from "lucide-react";
 
 export default function PackageDetailsPage() {
   const params = useParams();
@@ -16,6 +17,7 @@ export default function PackageDetailsPage() {
 
   // Booking Modal State
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [bookingStep, setBookingStep] = useState(1);
   const [guests, setGuests] = useState(1);
   const [travelers, setTravelers] = useState([{ name: "", age: "" }]);
@@ -125,6 +127,27 @@ export default function PackageDetailsPage() {
     }
   };
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: pkg.title,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Link copied to clipboard!");
+    }
+  };
+
+  const handleWhatsApp = () => {
+    const text = `Hi, I am interested in the package: ${pkg.title}. Please provide more details.`;
+    window.open(`https://wa.me/9108620564?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleWishlist = () => {
+    alert("Added to wishlist!");
+  };
+
   useEffect(() => {
     const fetchPackage = async () => {
       try {
@@ -224,8 +247,31 @@ export default function PackageDetailsPage() {
             className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100"
           >
             <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">Overview</h2>
-            <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-wrap text-lg">
-              {pkg.overview}
+            <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-wrap text-lg mb-8">
+              {pkg.fullDescription || pkg.overview}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-100">
+              <div className="flex flex-col">
+                <span className="text-gray-400 text-sm font-medium mb-1">Pickup</span>
+                <span className="text-gray-800 font-semibold">{pkg.pickupPoint || "Any"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-400 text-sm font-medium mb-1">Drop</span>
+                <span className="text-gray-800 font-semibold">{pkg.dropPoint || "Any"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-400 text-sm font-medium mb-1">Transport</span>
+                <span className="text-gray-800 font-semibold">{pkg.transportation || "Included"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-400 text-sm font-medium mb-1">Meals</span>
+                <span className="text-gray-800 font-semibold">{pkg.meals || "Included"}</span>
+              </div>
+              <div className="flex flex-col mt-4">
+                <span className="text-gray-400 text-sm font-medium mb-1">Accommodation</span>
+                <span className="text-gray-800 font-semibold">{pkg.accommodation || "Included"}</span>
+              </div>
             </div>
           </motion.section>
 
@@ -337,18 +383,43 @@ export default function PackageDetailsPage() {
                 <span className="font-semibold text-gray-800">{pkg.duration || "Flexible"}</span>
               </div>
               <div className="flex items-center justify-between text-gray-600">
-                <span className="flex items-center gap-2"><Calendar size={18} /> Availability</span>
-                <span className="font-semibold text-gray-800">Daily</span>
+                <span className="flex items-center gap-2"><Calendar size={18} /> Best Time</span>
+                <span className="font-semibold text-gray-800">{pkg.bestTime || "Year-round"}</span>
               </div>
               <div className="flex items-center justify-between text-gray-600">
-                <span className="flex items-center gap-2"><MapPin size={18} /> Location</span>
-                <span className="font-semibold text-gray-800">{pkg.destination?.name || "Multiple"}</span>
+                <span className="flex items-center gap-2"><MapPin size={18} /> Starting City</span>
+                <span className="font-semibold text-gray-800">{pkg.startingCity || "Multiple"}</span>
+              </div>
+              <div className="flex items-center justify-between text-gray-600">
+                <span className="flex items-center gap-2"><Info size={18} /> Difficulty</span>
+                <span className="font-semibold text-gray-800">{pkg.difficulty || "Easy"}</span>
               </div>
             </div>
 
-            <button onClick={handleBookClick} className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-              Book This Package
-            </button>
+            <div className="space-y-3 mb-6">
+              <button onClick={handleBookClick} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                Book This Package
+              </button>
+              
+              <button onClick={() => setShowInquiryModal(true)} className="w-full bg-white text-primary border-2 border-primary py-3 rounded-xl font-bold text-lg hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
+                Send Inquiry
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-green-50 text-green-600 transition group">
+                <MessageCircle size={20} className="mb-1 group-hover:scale-110 transition" />
+                <span className="text-xs font-semibold">WhatsApp</span>
+              </button>
+              <button onClick={handleShare} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-blue-50 text-blue-600 transition group">
+                <Share2 size={20} className="mb-1 group-hover:scale-110 transition" />
+                <span className="text-xs font-semibold">Share</span>
+              </button>
+              <button onClick={handleWishlist} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-red-50 text-red-500 transition group">
+                <Heart size={20} className="mb-1 group-hover:scale-110 transition" />
+                <span className="text-xs font-semibold">Wishlist</span>
+              </button>
+            </div>
             
             <p className="text-center text-sm text-gray-400 mt-4">
               No hidden fees. Instant confirmation.
@@ -565,6 +636,41 @@ export default function PackageDetailsPage() {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Inquiry Modal */}
+      {showInquiryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 pt-24">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md my-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Send Inquiry</h2>
+              <button onClick={() => setShowInquiryModal(false)} className="text-gray-400 hover:text-red-500">
+                <XCircle size={24} />
+              </button>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); alert("Inquiry sent!"); setShowInquiryModal(false); }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input type="text" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input type="tel" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea required rows={3} defaultValue={`I am interested in ${pkg.title}.`} className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+              </div>
+              <button type="submit" className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition">
+                Submit Inquiry
+              </button>
+            </form>
           </div>
         </div>
       )}
