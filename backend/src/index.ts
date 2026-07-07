@@ -35,23 +35,25 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/custom-trips', customTripRoutes);
 
 // Basic health check route
-app.get('/api/health', async (req, res) => {
+app.get('/health', async (req, res) => {
   try {
     // Perform a lightweight query to verify the database connection
     await prisma.$queryRaw`SELECT 1`;
     res.json({
-      success: true,
-      database: 'connected',
-      server: 'running'
+      server: 'running',
+      database: 'connected'
     });
   } catch (error: any) {
     res.status(500).json({
-      success: false,
-      database: 'disconnected',
       server: 'running',
-      error: error.message
+      database: 'disconnected'
     });
   }
+});
+
+// API health route for backward compatibility
+app.get('/api/health', async (req, res) => {
+  res.redirect('/health');
 });
 
 // Root API route
@@ -60,7 +62,7 @@ app.get(['/api', '/api/'], (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Gowings API.' });
+  res.json({ status: 'OK' });
 });
 
 // Global 404 handler
@@ -68,20 +70,22 @@ app.use((req, res) => {
   res.status(404).json({ error: `Cannot ${req.method} ${req.originalUrl}` });
 });
 
-connectDatabase().then(() => {
-  const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-
-  // Graceful shutdown
-  const gracefulShutdown = async () => {
-    console.log('Received shutdown signal, closing server and database...');
-    server.close(async () => {
-      await disconnectDatabase();
-      process.exit(0);
-    });
-  };
-
-  process.on('SIGINT', gracefulShutdown);
-  process.on('SIGTERM', gracefulShutdown);
+// Start the server immediately so Render detects the port
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
+
+// Initialize database connection in the background
+connectDatabase();
+
+// Graceful shutdown
+const gracefulShutdown = async () => {
+  console.log('Received shutdown signal, closing server and database...');
+  server.close(async () => {
+    await disconnectDatabase();
+    process.exit(0);
+  });
+};
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);

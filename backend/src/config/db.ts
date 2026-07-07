@@ -21,17 +21,17 @@ const prisma = new PrismaClient({
 });
 
 export const connectDatabase = async (retries = 5) => {
-  while (retries) {
+  while (retries > 0) {
     try {
       await prisma.$connect();
       console.log('✅ Database connected successfully');
       return;
     } catch (error) {
-      console.error(`❌ Database connection failed. Retries left: ${retries - 1}`, error);
+      console.error(`❌ Database connection failed. Retries left: ${retries - 1}`);
       retries -= 1;
       if (retries === 0) {
-        console.error('❌ Failed to connect to the database after multiple attempts. Exiting...');
-        process.exit(1);
+        console.error('❌ Failed to connect to the database after multiple attempts. Server will remain running, but database features will fail.');
+        return;
       }
       // Wait 5 seconds before retrying
       await new Promise(res => setTimeout(res, 5000));
