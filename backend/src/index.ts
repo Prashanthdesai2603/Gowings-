@@ -2,11 +2,19 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
 import { connectDatabase, disconnectDatabase } from './config/db';
 import prisma from './config/db';
+import { validateEnvVariables } from './utils/envValidator';
+import { errorHandler } from './middlewares/errorHandler';
+
+// Validate environment variables on startup
+validateEnvVariables();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +27,16 @@ import adminRoutes from './routes/adminRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import contactRoutes from './routes/contactRoutes';
 import customTripRoutes from './routes/customTripRoutes';
+
+app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
+app.use(compression());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api', limiter);
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -40,13 +58,17 @@ app.get('/health', async (req, res) => {
     // Perform a lightweight query to verify the database connection
     await prisma.$queryRaw`SELECT 1`;
     res.json({
-      server: 'running',
-      database: 'connected'
+      status: 'OK',
+      server: 'Running',
+      database: 'Connected',
+      environment: process.env.NODE_ENV || 'Production'
     });
   } catch (error: any) {
     res.status(500).json({
-      server: 'running',
-      database: 'disconnected'
+      status: 'OK', // Server is running
+      server: 'Running',
+      database: 'Disconnected',
+      environment: process.env.NODE_ENV || 'Production'
     });
   }
 });
@@ -69,6 +91,9 @@ app.get('/', (req, res) => {
 app.use((req, res) => {
   res.status(404).json({ error: `Cannot ${req.method} ${req.originalUrl}` });
 });
+
+// Centralized error handler (must be registered last)
+app.use(errorHandler);
 
 // Start the server immediately so Render detects the port
 const server = app.listen(PORT, () => {

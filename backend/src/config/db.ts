@@ -2,14 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Determine connection URL from variables or fallback to DATABASE_URL directly
-let databaseUrl = process.env.DATABASE_URL;
+// Use DATABASE_URL directly as requested by Render best practices
+const databaseUrl = process.env.DATABASE_URL;
 
-if (!databaseUrl && process.env.DB_USER && process.env.DB_HOST && process.env.DB_NAME) {
-  const port = process.env.DB_PORT || '3306';
-  // Note: ensure process.env.DB_PASSWORD is URL encoded if it contains special characters
-  const password = process.env.DB_PASSWORD ? encodeURIComponent(process.env.DB_PASSWORD) : '';
-  databaseUrl = `mysql://${process.env.DB_USER}:${password}@${process.env.DB_HOST}:${port}/${process.env.DB_NAME}`;
+if (!databaseUrl) {
+  console.warn('⚠️ DATABASE_URL is not set. Prisma will attempt to use the URL from schema.prisma or it may fail.');
 }
 
 const prisma = new PrismaClient({
@@ -18,6 +15,7 @@ const prisma = new PrismaClient({
       url: databaseUrl,
     },
   },
+  log: ['error', 'warn'],
 });
 
 export const connectDatabase = async (retries = 5) => {
