@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prestart": "npm run prisma:setup",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "npx prisma generate && npm run prisma:setup && tsc",
+    "build": "npx prisma generate && tsc",
     "prisma:setup": "node -e \"const fs=require('fs'); if(fs.existsSync('prisma/migrations')){require('child_process').execSync('npx prisma migrate deploy', {stdio: 'inherit'})} else {require('child_process').execSync('npx prisma db push', {stdio: 'inherit'})}\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
