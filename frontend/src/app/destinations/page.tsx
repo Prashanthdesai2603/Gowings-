@@ -21,11 +21,21 @@ export default function DestinationsPage() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations`);
         if (res.ok) {
-          const data = await res.json();
-          setDestinations(data);
+          const responseData = await res.json();
+          console.log("API Response:", responseData);
+          let extractedDestinations: Destination[] = [];
+          if (responseData && Array.isArray(responseData.data)) {
+            extractedDestinations = responseData.data;
+          } else if (Array.isArray(responseData)) {
+            extractedDestinations = responseData;
+          }
+          setDestinations(extractedDestinations);
+        } else {
+          setDestinations([]);
         }
       } catch (error) {
         console.error("Failed to fetch destinations:", error);
+        setDestinations([]);
       } finally {
         setLoading(false);
       }
@@ -44,16 +54,18 @@ export default function DestinationsPage() {
           </p>
         </div>
 
-        {loading ? (
+        {(() => {
+          const safeDestinations = Array.isArray(destinations) ? destinations : [];
+          return loading ? (
           <div className="text-center py-20 text-gray-500">Loading destinations...</div>
-        ) : destinations.length === 0 ? (
+        ) : safeDestinations.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
             <h3 className="text-2xl font-bold text-gray-600 mb-2">No destinations found</h3>
             <p className="text-gray-500">Stay tuned as we add more beautiful places to visit!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {destinations.map((dest, index) => (
+            {safeDestinations.map((dest, index) => (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -76,7 +88,8 @@ export default function DestinationsPage() {
               </motion.div>
             ))}
           </div>
-        )}
+        );
+        })()}
       </div>
     </div>
   );

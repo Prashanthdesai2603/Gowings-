@@ -12,11 +12,21 @@ export default function AdminDestinationsPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/destinations`);
       if (res.ok) {
-        const data = await res.json();
-        setDestinations(data);
+        const responseData = await res.json();
+        console.log("API Response:", responseData);
+        let extractedDestinations: any[] = [];
+        if (responseData && Array.isArray(responseData.data)) {
+          extractedDestinations = responseData.data;
+        } else if (Array.isArray(responseData)) {
+          extractedDestinations = responseData;
+        }
+        setDestinations(extractedDestinations);
+      } else {
+        setDestinations([]);
       }
     } catch (error) {
       console.error("Failed to fetch destinations:", error);
+      setDestinations([]);
     } finally {
       setLoading(false);
     }
@@ -45,6 +55,8 @@ export default function AdminDestinationsPage() {
       alert("Error deleting destination");
     }
   };
+
+  const safeDestinations = Array.isArray(destinations) ? destinations : [];
 
   return (
     <div className="space-y-6">
@@ -79,9 +91,9 @@ export default function AdminDestinationsPage() {
           <tbody className="text-sm">
             {loading ? (
               <tr><td colSpan={4} className="py-8 text-center text-slate-500">Loading destinations...</td></tr>
-            ) : destinations.length === 0 ? (
+            ) : safeDestinations.length === 0 ? (
               <tr><td colSpan={4} className="py-8 text-center text-slate-500">No destinations found.</td></tr>
-            ) : destinations.map((dest) => (
+            ) : safeDestinations.map((dest) => (
               <tr key={dest.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-4">
@@ -111,7 +123,7 @@ export default function AdminDestinationsPage() {
           </tbody>
         </table>
         <div className="p-4 border-t border-slate-100 bg-white text-slate-500 text-sm flex justify-between items-center">
-          <span>Showing {destinations.length > 0 ? 1 : 0} to {destinations.length} of {destinations.length} entries</span>
+          <span>Showing {safeDestinations.length > 0 ? 1 : 0} to {safeDestinations.length} of {safeDestinations.length} entries</span>
           <div className="flex gap-1">
             <button className="px-3 py-1 border rounded hover:bg-slate-50 disabled:opacity-50" disabled>Previous</button>
             <button className="px-3 py-1 border rounded bg-primary text-white">1</button>

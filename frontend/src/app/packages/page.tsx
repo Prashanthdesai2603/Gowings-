@@ -25,13 +25,26 @@ export default function PackagesPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips?${queryParams}`);
       if (res.ok) {
         const responseData = await res.json();
-        setPackages(responseData.data ? responseData.data : responseData);
-        if (responseData.pagination) {
+        console.log("API Response:", responseData);
+        
+        let extractedPackages: any[] = [];
+        if (responseData && Array.isArray(responseData.data)) {
+          extractedPackages = responseData.data;
+        } else if (Array.isArray(responseData)) {
+          extractedPackages = responseData;
+        }
+        
+        setPackages(extractedPackages);
+        
+        if (responseData && responseData.pagination) {
           setTotalPages(responseData.pagination.totalPages);
         }
+      } else {
+        setPackages([]);
       }
     } catch (error) {
       console.error("Failed to fetch packages:", error);
+      setPackages([]);
     } finally {
       setLoading(false);
     }
@@ -114,10 +127,12 @@ export default function PackagesPage() {
             </h2>
           </div>
 
-          {!loading && packages.length > 0 ? (
+          {(() => {
+            const safePackages = Array.isArray(packages) ? packages : [];
+            return !loading && safePackages.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {packages.map((pkg, index) => (
+                {safePackages.map((pkg, index) => (
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -190,7 +205,8 @@ export default function PackagesPage() {
                 Clear all filters
               </button>
             </div>
-          ) : null}
+          ) : null;
+          })()}
         </main>
       </div>
     </div>

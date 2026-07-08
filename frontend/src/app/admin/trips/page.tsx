@@ -13,10 +13,20 @@ export default function AdminTripsPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips`);
       if (res.ok) {
         const responseData = await res.json();
-        setPackages(responseData.data ? responseData.data : responseData);
+        console.log("API Response:", responseData);
+        let extractedPackages: any[] = [];
+        if (responseData && Array.isArray(responseData.data)) {
+          extractedPackages = responseData.data;
+        } else if (Array.isArray(responseData)) {
+          extractedPackages = responseData;
+        }
+        setPackages(extractedPackages);
+      } else {
+        setPackages([]);
       }
     } catch (error) {
       console.error("Failed to fetch trips:", error);
+      setPackages([]);
     } finally {
       setLoading(false);
     }
@@ -44,6 +54,8 @@ export default function AdminTripsPage() {
       alert("Error deleting trip");
     }
   };
+
+  const safePackages = Array.isArray(packages) ? packages : [];
 
   return (
     <div className="space-y-6">
@@ -86,9 +98,9 @@ export default function AdminTripsPage() {
           <tbody className="text-sm">
             {loading ? (
               <tr><td colSpan={5} className="py-8 text-center text-slate-500">Loading trips...</td></tr>
-            ) : packages.length === 0 ? (
+            ) : safePackages.length === 0 ? (
               <tr><td colSpan={5} className="py-8 text-center text-slate-500">No trips found.</td></tr>
-            ) : packages.map((pkg) => (
+            ) : safePackages.map((pkg) => (
               <tr key={pkg.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-4">
@@ -123,7 +135,7 @@ export default function AdminTripsPage() {
           </tbody>
         </table>
         <div className="p-4 border-t border-slate-100 bg-white text-slate-500 text-sm flex justify-between items-center">
-          <span>Showing {packages.length > 0 ? 1 : 0} to {packages.length} of {packages.length} entries</span>
+          <span>Showing {safePackages.length > 0 ? 1 : 0} to {safePackages.length} of {safePackages.length} entries</span>
           <div className="flex gap-1">
             <button className="px-3 py-1 border rounded hover:bg-slate-50 disabled:opacity-50" disabled>Previous</button>
             <button className="px-3 py-1 border rounded bg-primary text-white">1</button>
