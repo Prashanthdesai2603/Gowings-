@@ -15,7 +15,7 @@ export default function Footer() {
               Your Trusted Travel Partner for Memorable Journeys across India and international destinations.
             </p>
             <div className="flex gap-4">
-              <a href="#" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition font-bold text-sm">FB</a>
+              <a href="https://www.facebook.com/share/1KfyJ4HrZ1/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition font-bold text-sm">FB</a>
               <a href="https://www.instagram.com/thegowings?utm_source=qr&igsh=MTZqd3NyNHRpOXpmbA==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition font-bold text-sm">IG</a>
               <a href="#" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition font-bold text-sm">TW</a>
             </div>
