@@ -1,12 +1,13 @@
 import { Metadata } from 'next';
 
 type Props = {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${params.slug}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${slug}`);
     if (!res.ok) return { title: 'Package Not Found' };
     
     const trip = await res.json();
@@ -29,11 +30,12 @@ export default async function PackageLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
   let trip = null;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${params.slug}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${slug}`);
     if (res.ok) {
       trip = await res.json();
     }
