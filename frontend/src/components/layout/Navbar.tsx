@@ -25,8 +25,8 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [pathname]); // Re-run effect on pathname change if needed
 
-  // Transparent navbar only on home page and package details page
-  const isTransparentRoute = pathname === "/" || pathname.match(/^\/packages\/[^\/]+$/);
+  // Transparent navbar only on home page and package/trekking details page
+  const isTransparentRoute = pathname === "/" || pathname.match(/^\/packages\/[^\/]+$/) || pathname.match(/^\/trekking\/[^\/]+$/);
   const navClasses = isScrolled || !isTransparentRoute 
     ? "bg-white text-slate-800 shadow-md py-3" 
     : "bg-transparent text-white py-5";
@@ -46,6 +46,7 @@ export default function Navbar() {
           <Link href="/" className="transition">Home</Link>
           <Link href="/about" className="transition">About Us</Link>
           <Link href="/packages" className="transition">Packages</Link>
+          <Link href="/trekking" className="transition text-primary font-bold">Trekking</Link>
           <Link href="/destinations" className="transition">Destinations</Link>
           <Link href="/contact" className="transition">Contact</Link>
         </nav>
@@ -78,6 +79,7 @@ export default function Navbar() {
           <Link href="/" className="hover:text-primary font-medium" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
           <Link href="/about" className="hover:text-primary font-medium" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
           <Link href="/packages" className="hover:text-primary font-medium" onClick={() => setIsMobileMenuOpen(false)}>Packages</Link>
+          <Link href="/trekking" className="hover:text-primary font-medium text-primary" onClick={() => setIsMobileMenuOpen(false)}>Trekking</Link>
           <Link href="/destinations" className="hover:text-primary font-medium" onClick={() => setIsMobileMenuOpen(false)}>Destinations</Link>
           <Link href="/contact" className="hover:text-primary font-medium" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
           <div className="flex flex-col gap-3 mt-2 pt-4 border-t border-slate-100">

@@ -27,6 +27,7 @@ import adminRoutes from './routes/adminRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import contactRoutes from './routes/contactRoutes';
 import customTripRoutes from './routes/customTripRoutes';
+import trekRoutes from './routes/trekRoutes';
 
 app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
 app.use(compression());
@@ -38,13 +39,27 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://gowings-five.vercel.app'
+];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/trips', tripRoutes);
+app.use('/api/treks', trekRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/destinations', destinationRoutes);
 app.use('/api/categories', categoryRoutes);

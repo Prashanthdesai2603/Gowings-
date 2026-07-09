@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, Plane, CreditCard, Users, MessageSquare, Settings, LogOut, MapPin } from "lucide-react";
+import { LayoutDashboard, Plane, CreditCard, Users, MessageSquare, Settings, LogOut, MapPin, Mountain } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -44,6 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Manage Trips", href: "/admin/trips", icon: Plane },
+    { name: "Manage Treks", href: "/admin/treks", icon: Mountain },
     { name: "Manage Destinations", href: "/admin/destinations", icon: MapPin },
     { name: "Verify Payments", href: "/admin/payments", icon: CreditCard },
     { name: "Custom Trips", href: "/admin/custom-trips", icon: Plane },

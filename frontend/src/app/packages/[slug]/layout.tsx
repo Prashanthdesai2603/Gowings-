@@ -6,7 +6,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/trips/${params.slug}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${params.slug}`);
     if (!res.ok) return { title: 'Package Not Found' };
     
     const trip = await res.json();
@@ -33,7 +33,7 @@ export default async function PackageLayout({
 }) {
   let trip = null;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/trips/${params.slug}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${params.slug}`);
     if (res.ok) {
       trip = await res.json();
     }

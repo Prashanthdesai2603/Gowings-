@@ -148,6 +148,32 @@ export default function PackageDetailsPage() {
     alert("Added to wishlist!");
   };
 
+  const handleInquirySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const message = formData.get("message") as string;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, message })
+      });
+      if (res.ok) {
+        alert("Inquiry sent successfully!");
+        setShowInquiryModal(false);
+      } else {
+        alert("Failed to send inquiry. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error sending inquiry.");
+    }
+  };
+
   useEffect(() => {
     const fetchPackage = async () => {
       try {
@@ -650,22 +676,22 @@ export default function PackageDetailsPage() {
                 <XCircle size={24} />
               </button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); alert("Inquiry sent!"); setShowInquiryModal(false); }} className="space-y-4">
+            <form onSubmit={handleInquirySubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input type="text" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
+                <input name="name" type="text" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
+                <input name="email" type="email" required className="w-full border rounded-lg px-4 py-2 outline-none focus:border-primary/20" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input type="tel" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
+                <input name="phone" type="tel" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea required rows={3} defaultValue={`I am interested in ${pkg.title}.`} className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                <textarea name="message" required rows={3} defaultValue={`I am interested in ${pkg.title}.`} className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"></textarea>
               </div>
               <button type="submit" className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition">
                 Submit Inquiry

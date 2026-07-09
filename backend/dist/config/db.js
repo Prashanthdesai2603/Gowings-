@@ -16,13 +16,10 @@ exports.disconnectDatabase = exports.connectDatabase = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-// Determine connection URL from variables or fallback to DATABASE_URL directly
-let databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl && process.env.DB_USER && process.env.DB_HOST && process.env.DB_NAME) {
-    const port = process.env.DB_PORT || '3306';
-    // Note: ensure process.env.DB_PASSWORD is URL encoded if it contains special characters
-    const password = process.env.DB_PASSWORD ? encodeURIComponent(process.env.DB_PASSWORD) : '';
-    databaseUrl = `mysql://${process.env.DB_USER}:${password}@${process.env.DB_HOST}:${port}/${process.env.DB_NAME}`;
+// Use DATABASE_URL directly as requested by Render best practices
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+    console.warn('⚠️ DATABASE_URL is not set. Prisma will attempt to use the URL from schema.prisma or it may fail.');
 }
 const prisma = new client_1.PrismaClient({
     datasources: {
@@ -30,20 +27,21 @@ const prisma = new client_1.PrismaClient({
             url: databaseUrl,
         },
     },
+    log: ['error', 'warn'],
 });
 const connectDatabase = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (retries = 5) {
-    while (retries) {
+    while (retries > 0) {
         try {
             yield prisma.$connect();
             console.log('✅ Database connected successfully');
             return;
         }
         catch (error) {
-            console.error(`❌ Database connection failed. Retries left: ${retries - 1}`, error);
+            console.error(`❌ Database connection failed. Retries left: ${retries - 1}`);
             retries -= 1;
             if (retries === 0) {
-                console.error('❌ Failed to connect to the database after multiple attempts. Exiting...');
-                process.exit(1);
+                console.error('❌ Failed to connect to the database after multiple attempts. Server will remain running, but database features will fail.');
+                return;
             }
             // Wait 5 seconds before retrying
             yield new Promise(res => setTimeout(res, 5000));

@@ -74,6 +74,12 @@ model Trip {
   seoDescription     String?
   faq                Json?
   cancellationPolicy String?  @db.Text
+  
+  // Trekking Specific Fields
+  altitude           String?
+  discountedPrice    Float?
+  refundPolicy       String?  @db.Text
+  paymentTerms       String?  @db.Text
 
   bookings      Booking[]
   reviews       Review[]

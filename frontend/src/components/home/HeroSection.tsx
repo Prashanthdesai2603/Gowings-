@@ -68,10 +68,13 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
+          <Link href="/trekking" className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-semibold text-lg transition-transform hover:scale-105 shadow-xl">
+            Trekking
+          </Link>
           <Link href="/packages" className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 rounded-full font-semibold text-lg transition-transform hover:scale-105">
             Explore Packages
           </Link>
-          <Link href="/custom-trip" className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/50 text-white px-8 py-3 rounded-full font-semibold text-lg transition-transform hover:scale-105">
+          <Link href="/custom-trip" className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/50 text-white px-8 py-3 rounded-full font-semibold text-lg transition-transform hover:scale-105 hidden md:block">
             Plan Custom Trip
           </Link>
         </motion.div>

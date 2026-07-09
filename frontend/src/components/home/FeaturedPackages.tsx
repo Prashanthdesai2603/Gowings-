@@ -12,11 +12,18 @@ export default function FeaturedPackages() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/trips?limit=6`);
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/trips?limit=6`;
+        const res = await fetch(url);
+        
         if (res.ok) {
           const responseData = await res.json();
-          const packages = responseData.data ? responseData.data : responseData;
+          console.log(`[GET] ${url} - Status: ${res.status}`);
+          console.log("Response JSON:", responseData);
+          
+          const packages = Array.isArray(responseData.data) ? responseData.data : (Array.isArray(responseData) ? responseData : []);
           setFeatured(packages.filter((pkg: any) => pkg.isFeatured).slice(0, 6));
+        } else {
+          console.log(`[GET] ${url} - Status: ${res.status} (Failed)`);
         }
       } catch (error) {
         console.error("Failed to fetch featured packages:", error);

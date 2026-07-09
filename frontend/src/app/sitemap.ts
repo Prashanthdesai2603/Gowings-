@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     // Fetch dynamic trips
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/trips?limit=1000`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips?limit=1000`);
     if (res.ok) {
       const { data } = await res.json();
       const tripRoutes = (data || []).map((trip: any) => ({
