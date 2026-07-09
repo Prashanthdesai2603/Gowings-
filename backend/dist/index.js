@@ -36,6 +36,7 @@ const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const contactRoutes_1 = __importDefault(require("./routes/contactRoutes"));
 const customTripRoutes_1 = __importDefault(require("./routes/customTripRoutes"));
+const trekRoutes_1 = __importDefault(require("./routes/trekRoutes"));
 app.use((0, helmet_1.default)({ crossOriginResourcePolicy: false })); // allow cross-origin images
 app.use((0, compression_1.default)());
 const limiter = (0, express_rate_limit_1.default)({
@@ -64,6 +65,7 @@ app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
 app.use('/api/auth', authRoutes_1.default);
 app.use('/api/trips', tripRoutes_1.default);
+app.use('/api/treks', trekRoutes_1.default);
 app.use('/api/bookings', bookingRoutes_1.default);
 app.use('/api/destinations', destinationRoutes_1.default);
 app.use('/api/categories', categoryRoutes_1.default);

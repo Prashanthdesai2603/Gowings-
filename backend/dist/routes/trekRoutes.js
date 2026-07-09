@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const trekController_1 = require("../controllers/trekController");
+const auth_1 = require("../middlewares/auth");
+const router = (0, express_1.Router)();
+router.get('/', trekController_1.getTreks);
+router.get('/:slug', trekController_1.getTrekBySlug);
+router.post('/', auth_1.authenticate, auth_1.authorizeAdmin, trekController_1.createTrek);
+router.put('/:id', auth_1.authenticate, auth_1.authorizeAdmin, trekController_1.updateTrek);
+router.delete('/:id', auth_1.authenticate, auth_1.authorizeAdmin, trekController_1.deleteTrek);
+exports.default = router;

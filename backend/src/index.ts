@@ -43,6 +43,9 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://gowings-five.vercel.app'
 ];
+if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
