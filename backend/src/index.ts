@@ -29,16 +29,6 @@ import contactRoutes from './routes/contactRoutes';
 import customTripRoutes from './routes/customTripRoutes';
 import trekRoutes from './routes/trekRoutes';
 
-app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
-app.use(compression());
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use('/api', limiter);
-
 const allowedOrigins = [
   'http://localhost:3000',
   'https://gowings-five.vercel.app'
@@ -56,6 +46,17 @@ app.use(cors({
   },
   credentials: true
 }));
+
+app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
+app.use(compression());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5000, // limit each IP to 5000 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api', limiter);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

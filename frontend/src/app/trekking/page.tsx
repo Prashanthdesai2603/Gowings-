@@ -77,22 +77,21 @@ export default function TrekkingPage() {
 
   return (
     <div className="pt-24 pb-20 min-h-screen bg-slate-50">
-      <div className="bg-slate-900 text-white py-20 mb-12 relative overflow-hidden">
-        {/* Dynamic Background Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-             <defs>
-                <pattern id="pattern" width="100" height="100" patternUnits="userSpaceOnUse">
-                   <path d="M0 100 L50 0 L100 100 Z" fill="none" stroke="currentColor" strokeWidth="2" />
-                </pattern>
-             </defs>
-             <rect width="100%" height="100%" fill="url(#pattern)" />
-          </svg>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      <div 
+        className="text-white py-24 mb-12 relative overflow-hidden bg-slate-900 flex items-center justify-center min-h-[300px]"
+        style={{
+          backgroundImage: "url('/images/trekking-banner.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/60 z-0"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 w-full">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-             <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">Conquer The Heights</h1>
-             <p className="text-xl text-slate-300 max-w-2xl mx-auto font-medium">
+             <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-lg text-white">Conquer The Heights</h1>
+             <p className="text-xl text-slate-200 max-w-2xl mx-auto font-medium drop-shadow-md">
                Discover thrilling trekking trails. Escape the ordinary and embrace the adventure.
              </p>
           </motion.div>
