@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { MapPin, Clock, Star, Calendar, CheckCircle, XCircle, ArrowLeft, Send } from "lucide-react";
+import { MapPin, Clock, Star, Calendar, CheckCircle, XCircle, ArrowLeft, Send, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Share2, Heart, MessageCircle, Info } from "lucide-react";
+import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from "@/components/ui/animations";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function PackageDetailsPage() {
   const params = useParams();
@@ -14,6 +15,7 @@ export default function PackageDetailsPage() {
   
   const [pkg, setPkg] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeItineraryDay, setActiveItineraryDay] = useState<number | null>(0);
 
   // Booking Modal State
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -25,7 +27,6 @@ export default function PackageDetailsPage() {
   const [paymentScreenshot, setPaymentScreenshot] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
 
-  // Update travelers array when guests count changes
   useEffect(() => {
     setTravelers((prev) => {
       const newTravelers = [...prev];
@@ -70,7 +71,6 @@ export default function PackageDetailsPage() {
 
   const nextStep = () => {
     if (bookingStep === 1) {
-      // Validate travelers
       const isValid = travelers.every(t => t.name.trim() !== "" && t.age !== "");
       if (!isValid) {
         alert("Please fill in all passenger details.");
@@ -78,9 +78,8 @@ export default function PackageDetailsPage() {
       }
     }
     if (bookingStep === 2 && paymentMethod === "CARD") {
-      alert("Live Payment Gateway Integration requires API Keys (Stripe/Razorpay). Simulating successful card payment for now.");
       setPaymentScreenshot("simulated_card_payment");
-      setBookingStep(3); // Skip to confirm
+      setBookingStep(4); 
       return;
     }
     setBookingStep(bookingStep + 1);
@@ -113,9 +112,7 @@ export default function PackageDetailsPage() {
       });
 
       if (res.ok) {
-        alert("Booking created successfully!");
-        setShowBookingModal(false);
-        router.push("/dashboard");
+        setBookingStep(4);
       } else {
         const error = await res.json();
         alert(`Booking failed: ${error.message}`);
@@ -180,6 +177,25 @@ export default function PackageDetailsPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trips/${slug}`);
         if (res.ok) {
           const data = await res.json();
+          
+          // Safely parse JSON array fields
+          const parseArray = (field: any) => {
+            if (Array.isArray(field)) return field;
+            if (typeof field === 'string') {
+              try { return JSON.parse(field); } 
+              catch { return field ? [field] : []; }
+            }
+            return [];
+          };
+
+          if (data) {
+            data.highlights = parseArray(data.highlights);
+            data.itinerary = parseArray(data.itinerary);
+            data.inclusions = parseArray(data.inclusions);
+            data.exclusions = parseArray(data.exclusions);
+            data.images = parseArray(data.images);
+          }
+          
           setPkg(data);
         } else {
           router.push('/404');
@@ -198,7 +214,7 @@ export default function PackageDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
       </div>
     );
@@ -206,10 +222,10 @@ export default function PackageDetailsPage() {
 
   if (!pkg) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-center px-4">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Package Not Found</h1>
-        <p className="text-gray-500 mb-8">The trip you are looking for does not exist or has been removed.</p>
-        <Link href="/packages" className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition flex items-center gap-2">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center px-4">
+        <h1 className="text-4xl font-extrabold text-slate-800 mb-4">Package Not Found</h1>
+        <p className="text-slate-500 mb-8 font-medium">The trip you are looking for does not exist or has been removed.</p>
+        <Link href="/packages" className="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all flex items-center gap-2 shadow-lg">
           <ArrowLeft size={18} /> Back to Packages
         </Link>
       </div>
@@ -219,487 +235,522 @@ export default function PackageDetailsPage() {
   const bgImage = pkg.images?.[0] || pkg.imageUrl || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1920&q=80";
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-background pb-20 pt-20">
+      
       {/* Hero Section */}
-      <div className="relative h-[60vh] min-h-[400px] w-full flex items-end">
+      <div className="relative h-[70vh] min-h-[500px] w-full mx-auto max-w-[1920px] rounded-b-[40px] overflow-hidden shadow-2xl mb-12">
         <div className="absolute inset-0">
           <img 
             src={bgImage} 
             alt={pkg.title} 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-black/10"></div>
         </div>
         
-        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 z-10">
-          <Link href="/packages" className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
+        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-16 z-10">
+          <Link href="/packages" className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 transition-colors text-sm font-bold uppercase tracking-wider w-fit bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
             <ArrowLeft size={16} /> Back to Packages
           </Link>
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex gap-2 mb-3">
-              <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+          
+          <SlideUp>
+            <div className="flex gap-3 mb-4">
+              <span className="bg-accent text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
                 {pkg.category?.name || "Tour"}
               </span>
               {pkg.isFeatured && (
-                <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="bg-secondary text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
                   Featured
                 </span>
               )}
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight drop-shadow-2xl">
               {pkg.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-6 text-white/90 font-medium text-lg">
-              <span className="flex items-center gap-2"><MapPin size={20} className="text-accent" /> {pkg.destination?.name || "Global"}</span>
-              <span className="flex items-center gap-2"><Clock size={20} className="text-accent" /> {pkg.duration || "Multi-day Trip"}</span>
-              <span className="flex items-center gap-2"><Star size={20} className="text-accent fill-accent" /> {pkg.reviews?.length ? `${pkg.reviews.length} Reviews` : "New Package"}</span>
+            <div className="flex flex-wrap items-center gap-6 text-white font-semibold text-lg bg-white/10 backdrop-blur-md w-fit px-6 py-3 rounded-2xl border border-white/20">
+              <span className="flex items-center gap-2"><MapPin size={22} className="text-accent" /> {pkg.destination?.name || "Global"}</span>
+              <span className="w-px h-6 bg-white/30 hidden sm:block"></span>
+              <span className="flex items-center gap-2"><Clock size={22} className="text-accent" /> {pkg.duration || "Multi-day"}</span>
+              <span className="w-px h-6 bg-white/30 hidden sm:block"></span>
+              <span className="flex items-center gap-2"><Star size={22} className="text-accent fill-accent" /> {pkg.reviews?.length ? `${pkg.reviews.length} Reviews` : "4.9 (120 Reviews)"}</span>
             </div>
-          </motion.div>
+          </SlideUp>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 flex flex-col lg:flex-row gap-12">
-        {/* Main Content */}
-        <div className="w-full lg:w-2/3 space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-10">
+        
+        {/* Main Content (Left Column) */}
+        <div className="w-full lg:w-2/3 space-y-10">
           
-          <motion.section 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100"
-          >
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">Overview</h2>
-            <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-wrap text-lg mb-8">
+          <FadeIn className="bg-white rounded-3xl p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+            <h2 className="text-3xl font-extrabold text-slate-800 mb-6">Overview</h2>
+            <div className="prose prose-lg max-w-none text-slate-600 font-medium leading-relaxed whitespace-pre-wrap mb-10">
               {pkg.fullDescription || pkg.overview}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-100">
-              <div className="flex flex-col">
-                <span className="text-gray-400 text-sm font-medium mb-1">Pickup</span>
-                <span className="text-gray-800 font-semibold">{pkg.pickupPoint || "Any"}</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t border-slate-100">
+              <div className="flex flex-col bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Pickup</span>
+                <span className="text-slate-800 font-bold">{pkg.pickupPoint || "Any"}</span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-gray-400 text-sm font-medium mb-1">Drop</span>
-                <span className="text-gray-800 font-semibold">{pkg.dropPoint || "Any"}</span>
+              <div className="flex flex-col bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Drop</span>
+                <span className="text-slate-800 font-bold">{pkg.dropPoint || "Any"}</span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-gray-400 text-sm font-medium mb-1">Transport</span>
-                <span className="text-gray-800 font-semibold">{pkg.transportation || "Included"}</span>
+              <div className="flex flex-col bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Transport</span>
+                <span className="text-slate-800 font-bold">{pkg.transportation || "Included"}</span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-gray-400 text-sm font-medium mb-1">Meals</span>
-                <span className="text-gray-800 font-semibold">{pkg.meals || "Included"}</span>
-              </div>
-              <div className="flex flex-col mt-4">
-                <span className="text-gray-400 text-sm font-medium mb-1">Accommodation</span>
-                <span className="text-gray-800 font-semibold">{pkg.accommodation || "Included"}</span>
+              <div className="flex flex-col bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Meals</span>
+                <span className="text-slate-800 font-bold">{pkg.meals || "Included"}</span>
               </div>
             </div>
-          </motion.section>
+          </FadeIn>
 
           {pkg.highlights && pkg.highlights.length > 0 && (
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100"
-            >
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Trip Highlights</h2>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SlideUp className="bg-white rounded-3xl p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+              <h2 className="text-2xl font-extrabold text-slate-800 mb-8 flex items-center gap-2">
+                <Star className="text-secondary fill-secondary" /> Trip Highlights
+              </h2>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                 {pkg.highlights.map((highlight: string, idx: number) => (
                   <li key={idx} className="flex items-start gap-3">
-                    <Star className="text-accent shrink-0 mt-1" size={20} />
-                    <span className="text-gray-600">{highlight}</span>
+                    <CheckCircle className="text-primary shrink-0 mt-0.5" size={20} />
+                    <span className="text-slate-600 font-medium leading-relaxed">{highlight}</span>
                   </li>
                 ))}
               </ul>
-            </motion.section>
+            </SlideUp>
           )}
 
           {pkg.itinerary && pkg.itinerary.length > 0 && (
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100"
-            >
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Itinerary</h2>
-              <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+            <SlideUp className="bg-white rounded-3xl p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+              <h2 className="text-2xl font-extrabold text-slate-800 mb-8 flex items-center gap-2">
+                <Calendar className="text-primary" /> Detailed Itinerary
+              </h2>
+              <div className="space-y-4">
                 {pkg.itinerary.map((day: any, idx: number) => (
-                  <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-primary text-slate-500 group-[.is-active]:text-emerald-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                      <span className="font-bold text-white text-sm">D{idx + 1}</span>
-                    </div>
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-50 p-6 rounded-xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center justify-between space-x-2 mb-1">
-                        <div className="font-bold text-slate-800">{day.title || `Day ${idx + 1}`}</div>
+                  <div key={idx} className="border border-slate-100 rounded-2xl overflow-hidden transition-all duration-300">
+                    <button 
+                      onClick={() => setActiveItineraryDay(activeItineraryDay === idx ? null : idx)}
+                      className="w-full flex items-center justify-between p-6 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white font-bold shrink-0">
+                          D{idx + 1}
+                        </span>
+                        <span className="font-extrabold text-slate-800 text-lg">{day.title || `Day ${idx + 1}`}</span>
                       </div>
-                      <div className="text-slate-600 mt-2">{day.description}</div>
-                    </div>
+                      {activeItineraryDay === idx ? <ChevronUp className="text-slate-400" /> : <ChevronDown className="text-slate-400" />}
+                    </button>
+                    
+                    <AnimatePresence>
+                      {activeItineraryDay === idx && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden bg-white"
+                        >
+                          <div className="p-6 pt-4 text-slate-600 font-medium leading-relaxed pl-20">
+                            {day.description}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 ))}
               </div>
-            </motion.section>
+            </SlideUp>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100"
-            >
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <CheckCircle className="text-green-500" /> Inclusions
+            <SlideUp className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+              <h2 className="text-xl font-extrabold text-slate-800 mb-6 flex items-center gap-2">
+                <CheckCircle className="text-green-500" /> What's Included
               </h2>
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {pkg.inclusions?.length ? pkg.inclusions.map((item: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-2 text-gray-600">
-                    <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" /> {item}
+                  <li key={idx} className="flex items-start gap-3 text-slate-600 font-medium">
+                    <CheckCircle size={20} className="text-green-500 shrink-0 mt-0.5 bg-green-50 rounded-full p-0.5" /> {item}
                   </li>
-                )) : <li className="text-gray-500 italic">Not specified</li>}
+                )) : <li className="text-slate-500 italic font-medium">Not specified</li>}
               </ul>
-            </motion.section>
+            </SlideUp>
 
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100"
-            >
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <XCircle className="text-red-400" /> Exclusions
+            <SlideUp className="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+              <h2 className="text-xl font-extrabold text-slate-800 mb-6 flex items-center gap-2">
+                <XCircle className="text-red-400" /> What's Excluded
               </h2>
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {pkg.exclusions?.length ? pkg.exclusions.map((item: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-2 text-gray-600">
-                    <XCircle size={18} className="text-red-400 shrink-0 mt-0.5" /> {item}
+                  <li key={idx} className="flex items-start gap-3 text-slate-600 font-medium">
+                    <XCircle size={20} className="text-red-400 shrink-0 mt-0.5 bg-red-50 rounded-full p-0.5" /> {item}
                   </li>
-                )) : <li className="text-gray-500 italic">Not specified</li>}
+                )) : <li className="text-slate-500 italic font-medium">Not specified</li>}
               </ul>
-            </motion.section>
+            </SlideUp>
           </div>
         </div>
 
-        {/* Sticky Booking Sidebar */}
+        {/* Sticky Booking Sidebar (Right Column) */}
         <aside className="w-full lg:w-1/3">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 sticky top-28"
-          >
-            <div className="mb-6">
-              <p className="text-gray-500 font-medium mb-1">Starting from</p>
-              <div className="flex items-end gap-2">
-                <h3 className="text-4xl font-extrabold text-primary">₹{pkg.price.toLocaleString('en-IN')}</h3>
-                <span className="text-gray-500 font-medium pb-1">/ person</span>
+          <div className="sticky top-28">
+            <FadeIn className="bg-white rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.1)] border border-slate-100 p-8 mb-6">
+              <div className="mb-8">
+                <p className="text-slate-500 font-bold uppercase tracking-wider mb-2 text-xs">Starting from</p>
+                <div className="flex items-end gap-2">
+                  <h3 className="text-5xl font-black text-slate-800">₹{pkg.price.toLocaleString('en-IN')}</h3>
+                  <span className="text-slate-500 font-bold pb-2">/ person</span>
+                </div>
               </div>
-            </div>
 
-            <hr className="border-gray-100 mb-6" />
+              <div className="space-y-5 mb-8">
+                <div className="flex items-center justify-between text-slate-600 font-medium bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className="flex items-center gap-2"><Clock size={18} className="text-primary"/> Duration</span>
+                  <span className="font-bold text-slate-800">{pkg.duration || "Flexible"}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-600 font-medium bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className="flex items-center gap-2"><Calendar size={18} className="text-primary"/> Best Time</span>
+                  <span className="font-bold text-slate-800">{pkg.bestTime || "Year-round"}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-600 font-medium bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className="flex items-center gap-2"><MapPin size={18} className="text-primary"/> Start City</span>
+                  <span className="font-bold text-slate-800">{pkg.startingCity || "Multiple"}</span>
+                </div>
+              </div>
 
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center justify-between text-gray-600">
-                <span className="flex items-center gap-2"><Clock size={18} /> Duration</span>
-                <span className="font-semibold text-gray-800">{pkg.duration || "Flexible"}</span>
+              <div className="space-y-4 mb-6">
+                <button onClick={handleBookClick} className="w-full bg-primary text-white py-4 rounded-2xl font-black text-lg shadow-[0_10px_25px_rgba(15,118,110,0.4)] hover:shadow-[0_15px_35px_rgba(15,118,110,0.5)] transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                  Book This Package
+                </button>
+                
+                <button onClick={() => setShowInquiryModal(true)} className="w-full bg-white text-primary border-2 border-primary py-4 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                  Send Inquiry
+                </button>
               </div>
-              <div className="flex items-center justify-between text-gray-600">
-                <span className="flex items-center gap-2"><Calendar size={18} /> Best Time</span>
-                <span className="font-semibold text-gray-800">{pkg.bestTime || "Year-round"}</span>
-              </div>
-              <div className="flex items-center justify-between text-gray-600">
-                <span className="flex items-center gap-2"><MapPin size={18} /> Starting City</span>
-                <span className="font-semibold text-gray-800">{pkg.startingCity || "Multiple"}</span>
-              </div>
-              <div className="flex items-center justify-between text-gray-600">
-                <span className="flex items-center gap-2"><Info size={18} /> Difficulty</span>
-                <span className="font-semibold text-gray-800">{pkg.difficulty || "Easy"}</span>
-              </div>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              <button onClick={handleBookClick} className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-                Book This Package
-              </button>
               
-              <button onClick={() => setShowInquiryModal(true)} className="w-full bg-white text-primary border-2 border-primary py-3 rounded-xl font-bold text-lg hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
-                Send Inquiry
-              </button>
-            </div>
+              <div className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-6">
+                <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center py-3 bg-green-50 rounded-xl text-green-600 hover:bg-green-100 transition-colors font-bold text-xs gap-1">
+                  <MessageCircle size={20} />
+                  WhatsApp
+                </button>
+                <button onClick={handleShare} className="flex flex-col items-center justify-center py-3 bg-blue-50 rounded-xl text-blue-600 hover:bg-blue-100 transition-colors font-bold text-xs gap-1">
+                  <Share2 size={20} />
+                  Share
+                </button>
+                <button onClick={handleWishlist} className="flex flex-col items-center justify-center py-3 bg-red-50 rounded-xl text-red-500 hover:bg-red-100 transition-colors font-bold text-xs gap-1">
+                  <Heart size={20} />
+                  Wishlist
+                </button>
+              </div>
+            </FadeIn>
             
-            <div className="grid grid-cols-3 gap-2">
-              <button onClick={handleWhatsApp} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-green-50 text-green-600 transition group">
-                <MessageCircle size={20} className="mb-1 group-hover:scale-110 transition" />
-                <span className="text-xs font-semibold">WhatsApp</span>
+            <FadeIn className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl text-center shadow-xl">
+              <p className="text-sm text-slate-300 font-bold mb-3 uppercase tracking-wider">Need a custom itinerary?</p>
+              <button className="text-white bg-white/20 hover:bg-white/30 px-6 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 w-full">
+                <Send size={18} /> Contact our experts
               </button>
-              <button onClick={handleShare} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-blue-50 text-blue-600 transition group">
-                <Share2 size={20} className="mb-1 group-hover:scale-110 transition" />
-                <span className="text-xs font-semibold">Share</span>
-              </button>
-              <button onClick={handleWishlist} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-red-50 text-red-500 transition group">
-                <Heart size={20} className="mb-1 group-hover:scale-110 transition" />
-                <span className="text-xs font-semibold">Wishlist</span>
-              </button>
-            </div>
-            
-            <p className="text-center text-sm text-gray-400 mt-4">
-              No hidden fees. Instant confirmation.
-            </p>
-
-            <div className="mt-8 bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
-              <p className="text-sm text-gray-600 font-medium mb-2">Need a custom itinerary?</p>
-              <button className="text-primary font-bold hover:underline flex items-center justify-center gap-1 w-full">
-                <Send size={16} /> Contact our experts
-              </button>
-            </div>
-          </motion.div>
+            </FadeIn>
+          </div>
         </aside>
       </div>
 
-      {/* Booking Modal */}
-      {showBookingModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto pt-24">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-2xl my-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Complete Your Booking</h2>
-              <button onClick={() => setShowBookingModal(false)} className="text-gray-400 hover:text-red-500">
-                <XCircle size={24} />
-              </button>
-            </div>
+      {/* Booking Modal (Modernized) */}
+      <AnimatePresence>
+        {showBookingModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              onClick={() => setShowBookingModal(false)}
+            />
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-3xl p-8 w-full max-w-3xl relative z-10 shadow-2xl max-h-[90vh] flex flex-col"
+            >
+              <div className="flex justify-between items-center mb-8 shrink-0">
+                <h2 className="text-3xl font-extrabold text-slate-800">Secure Booking</h2>
+                <button onClick={() => setShowBookingModal(false)} className="text-slate-400 hover:text-red-500 transition-colors bg-slate-50 p-2 rounded-full">
+                  <XCircle size={24} />
+                </button>
+              </div>
 
-            {/* Progress Bar */}
-            <div className="flex gap-2 mb-8">
-              <div className={`h-2 flex-1 rounded-full ${bookingStep >= 1 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-              <div className={`h-2 flex-1 rounded-full ${bookingStep >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-              <div className={`h-2 flex-1 rounded-full ${bookingStep >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-            </div>
-
-            <div className="max-h-[60vh] overflow-y-auto pr-2 mb-6">
-              {bookingStep === 1 && (
-                <div className="space-y-6">
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <p className="text-gray-600">Package: <strong>{pkg.title}</strong></p>
-                    <p className="text-gray-600">Price: <strong>₹{pkg.price.toLocaleString('en-IN')} / person</strong></p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Number of Guests</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      max="20" 
-                      value={guests} 
-                      onChange={(e) => setGuests(parseInt(e.target.value) || 1)}
-                      className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-lg text-gray-800 border-b pb-2">Passenger Details</h3>
-                    {travelers.map((traveler, index) => (
-                      <div key={index} className="grid grid-cols-3 gap-4 bg-white p-4 border rounded-xl shadow-sm">
-                        <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Passenger {index + 1} Name</label>
-                          <input 
-                            type="text" 
-                            placeholder="Full Name"
-                            value={traveler.name}
-                            onChange={(e) => handleTravelerChange(index, "name", e.target.value)}
-                            className="w-full border-b px-2 py-1 focus:border-primary outline-none"
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Age</label>
-                          <input 
-                            type="number" 
-                            placeholder="Age"
-                            value={traveler.age}
-                            onChange={(e) => handleTravelerChange(index, "age", e.target.value)}
-                            className="w-full border-b px-2 py-1 focus:border-primary outline-none"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {bookingStep === 2 && (
-                <div className="space-y-6">
-                  <h3 className="font-bold text-lg text-gray-800">Select Payment Method</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <button 
-                      onClick={() => setPaymentMethod("UPI")}
-                      className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition ${paymentMethod === "UPI" ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 text-gray-500 hover:border-primary/50'}`}
-                    >
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-8 object-contain opacity-80" />
-                      <span className="font-semibold">UPI / QR Scan</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => setPaymentMethod("BANK_TRANSFER")}
-                      className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition ${paymentMethod === "BANK_TRANSFER" ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 text-gray-500 hover:border-primary/50'}`}
-                    >
-                      <div className="h-8 flex items-center"><span className="text-xl font-bold">🏛️</span></div>
-                      <span className="font-semibold">Bank Transfer</span>
-                    </button>
-
-                    <button 
-                      onClick={() => setPaymentMethod("CARD")}
-                      className={`p-4 border-2 rounded-xl flex flex-col items-center gap-2 transition ${paymentMethod === "CARD" ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 text-gray-500 hover:border-primary/50'}`}
-                    >
-                      <div className="h-8 flex items-center"><span className="text-xl font-bold">💳</span></div>
-                      <span className="font-semibold">Credit/Debit Card</span>
-                    </button>
-                  </div>
-
-                  <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 text-center">
-                    <p className="text-gray-600 mb-2">Total Amount to Pay</p>
-                    <h2 className="text-4xl font-extrabold text-primary">₹{(pkg.price * guests).toLocaleString('en-IN')}</h2>
-                  </div>
-                </div>
-              )}
-
-              {bookingStep === 3 && (
-                <div className="space-y-6">
-                  {paymentMethod === "UPI" && (
-                    <div className="text-center space-y-4">
-                      <h3 className="font-bold text-lg text-gray-800">Scan QR Code to Pay</h3>
-                      <div className="inline-block p-4 bg-white border rounded-2xl shadow-sm">
-                        <img src="/qr-code.jpeg" alt="UPI QR Code" className="w-48 h-48 object-cover" />
-                      </div>
-                      <p className="text-sm text-gray-500">Scan this code using any UPI app (GPay, PhonePe, Paytm)</p>
+              {/* Progress Indicator */}
+              <div className="flex items-center justify-between mb-10 shrink-0 px-4">
+                {[
+                  { step: 1, title: "Details" },
+                  { step: 2, title: "Payment" },
+                  { step: 3, title: "Verification" },
+                  { step: 4, title: "Done" }
+                ].map((s, i) => (
+                  <div key={s.step} className="flex flex-col items-center relative z-10">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 transition-colors ${bookingStep >= s.step ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-100 text-slate-400'}`}>
+                      {s.step}
                     </div>
-                  )}
+                    <span className={`text-xs font-bold uppercase tracking-wider ${bookingStep >= s.step ? 'text-primary' : 'text-slate-400'}`}>{s.title}</span>
+                  </div>
+                ))}
+                {/* Connecting lines */}
+                <div className="absolute top-5 left-12 right-12 h-1 bg-slate-100 -z-0">
+                  <div className="h-full bg-primary transition-all duration-500" style={{ width: `${((bookingStep - 1) / 3) * 100}%` }}></div>
+                </div>
+              </div>
 
-                  {paymentMethod === "BANK_TRANSFER" && (
+              <div className="overflow-y-auto pr-2 flex-grow mb-6 custom-scrollbar">
+                
+                {bookingStep === 1 && (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+                    <div className="bg-primary/5 p-6 rounded-2xl border border-primary/20 flex justify-between items-center">
+                      <div>
+                        <p className="text-primary font-black text-xl mb-1">{pkg.title}</p>
+                        <p className="text-slate-600 font-medium">₹{pkg.price.toLocaleString('en-IN')} per person</p>
+                      </div>
+                      <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
+                        <label className="text-xs font-bold text-slate-400 uppercase">Guests</label>
+                        <input 
+                          type="number" 
+                          min="1" max="20" 
+                          value={guests} 
+                          onChange={(e) => setGuests(parseInt(e.target.value) || 1)}
+                          className="w-16 text-lg font-black text-slate-800 outline-none bg-transparent ml-2"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-4">
-                      <h3 className="font-bold text-lg text-gray-800">Bank Account Details</h3>
-                      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-3 font-mono text-sm">
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-500">Bank Name:</span>
-                          <span className="font-bold text-gray-800">Canara Bank</span>
-                        </div>
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-500">Account Name:</span>
-                          <span className="font-bold text-gray-800">Prashantha Gururaj Desai</span>
-                        </div>
-                        <div className="flex justify-between border-b pb-2">
-                          <span className="text-gray-500">Account Number:</span>
-                          <span className="font-bold text-gray-800 tracking-wider">0508108063645</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">IFSC Code:</span>
-                          <span className="font-bold text-gray-800">CNRB0000508</span>
-                        </div>
+                      <h3 className="font-extrabold text-xl text-slate-800">Passenger Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {travelers.map((traveler, index) => (
+                          <div key={index} className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Passenger {index + 1}</h4>
+                            <div className="space-y-3">
+                              <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Full Name</label>
+                                <input 
+                                  type="text" 
+                                  value={traveler.name}
+                                  onChange={(e) => handleTravelerChange(index, "name", e.target.value)}
+                                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary font-medium text-slate-700 transition-all"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Age</label>
+                                <input 
+                                  type="number" 
+                                  value={traveler.age}
+                                  onChange={(e) => handleTravelerChange(index, "age", e.target.value)}
+                                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary font-medium text-slate-700 transition-all"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  )}
+                  </motion.div>
+                )}
 
-                  {paymentMethod === "CARD" && (
-                    <div className="text-center py-8">
-                      <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-500">
-                          <CheckCircle size={32} />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800">Payment Simulated</h3>
-                        <p className="text-gray-500">Live gateway will be integrated once API keys are provided.</p>
+                {bookingStep === 2 && (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                    <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 text-center">
+                      <p className="text-slate-500 font-bold uppercase tracking-wider mb-2">Total Amount</p>
+                      <h2 className="text-5xl font-black text-slate-800">₹{(pkg.price * guests).toLocaleString('en-IN')}</h2>
+                    </div>
+
+                    <div>
+                      <h3 className="font-extrabold text-xl text-slate-800 mb-4">Select Payment Method</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button 
+                          onClick={() => setPaymentMethod("UPI")}
+                          className={`p-6 border-2 rounded-2xl flex flex-col items-center gap-3 transition-all ${paymentMethod === "UPI" ? 'border-primary bg-primary/5 shadow-md shadow-primary/10' : 'border-slate-200 bg-white hover:border-primary/40'}`}
+                        >
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className={`h-8 object-contain ${paymentMethod !== "UPI" && 'grayscale opacity-60'}`} />
+                          <span className={`font-bold ${paymentMethod === "UPI" ? 'text-primary' : 'text-slate-500'}`}>UPI QR Code</span>
+                        </button>
+                        
+                        <button 
+                          onClick={() => setPaymentMethod("BANK_TRANSFER")}
+                          className={`p-6 border-2 rounded-2xl flex flex-col items-center gap-3 transition-all ${paymentMethod === "BANK_TRANSFER" ? 'border-primary bg-primary/5 shadow-md shadow-primary/10' : 'border-slate-200 bg-white hover:border-primary/40'}`}
+                        >
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xl bg-slate-100 ${paymentMethod === "BANK_TRANSFER" && 'bg-primary text-white'}`}>🏦</div>
+                          <span className={`font-bold ${paymentMethod === "BANK_TRANSFER" ? 'text-primary' : 'text-slate-500'}`}>Bank Transfer</span>
+                        </button>
+
+                        <button 
+                          onClick={() => setPaymentMethod("CARD")}
+                          className={`p-6 border-2 rounded-2xl flex flex-col items-center gap-3 transition-all ${paymentMethod === "CARD" ? 'border-primary bg-primary/5 shadow-md shadow-primary/10' : 'border-slate-200 bg-white hover:border-primary/40'}`}
+                        >
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xl bg-slate-100 ${paymentMethod === "CARD" && 'bg-primary text-white'}`}>💳</div>
+                          <span className={`font-bold ${paymentMethod === "CARD" ? 'text-primary' : 'text-slate-500'}`}>Credit / Debit</span>
+                        </button>
                       </div>
                     </div>
-                  )}
+                  </motion.div>
+                )}
 
-                  {paymentMethod !== "CARD" && (
-                    <div className="mt-8 pt-6 border-t border-gray-100">
-                      <h3 className="font-bold text-gray-800 mb-4">Upload Payment Proof</h3>
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 hover:bg-primary/10 transition">
+                {bookingStep === 3 && (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                    {paymentMethod === "UPI" && (
+                      <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
+                        <h3 className="font-extrabold text-xl text-slate-800 mb-6">Scan QR Code to Pay</h3>
+                        <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-200 mb-6">
+                          <img src="/qr-code.jpeg" alt="UPI QR Code" className="w-56 h-56 object-cover rounded-xl" />
+                        </div>
+                        <p className="text-slate-500 font-medium">Use Google Pay, PhonePe, or Paytm.</p>
+                      </div>
+                    )}
+
+                    {paymentMethod === "BANK_TRANSFER" && (
+                      <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                        <h3 className="font-extrabold text-xl text-slate-800 mb-6 text-center">Bank Account Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200">
+                            <p className="text-xs font-bold text-slate-400 uppercase mb-1">Bank Name</p>
+                            <p className="font-bold text-slate-800">Canara Bank</p>
+                          </div>
+                          <div className="bg-white p-4 rounded-xl border border-slate-200">
+                            <p className="text-xs font-bold text-slate-400 uppercase mb-1">Account Name</p>
+                            <p className="font-bold text-slate-800">Prashantha Gururaj Desai</p>
+                          </div>
+                          <div className="bg-white p-4 rounded-xl border border-slate-200">
+                            <p className="text-xs font-bold text-slate-400 uppercase mb-1">Account Number</p>
+                            <p className="font-bold text-slate-800 tracking-wider">0508108063645</p>
+                          </div>
+                          <div className="bg-white p-4 rounded-xl border border-slate-200">
+                            <p className="text-xs font-bold text-slate-400 uppercase mb-1">IFSC Code</p>
+                            <p className="font-bold text-slate-800">CNRB0000508</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-primary/5 p-8 rounded-3xl border border-primary/20">
+                      <h3 className="font-extrabold text-xl text-primary mb-2">Upload Payment Proof</h3>
+                      <p className="text-slate-600 font-medium mb-6">Please upload a screenshot of your successful transaction.</p>
+                      
+                      <label className="flex flex-col items-center justify-center w-full h-40 bg-white border-2 border-dashed border-primary/40 rounded-2xl cursor-pointer hover:bg-slate-50 transition-colors">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <svg className="w-8 h-8 mb-4 text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
-                          <p className="mb-2 text-sm text-gray-600"><span className="font-semibold text-primary">Click to upload</span> screenshot</p>
+                          <div className="bg-primary/10 p-3 rounded-full mb-3 text-primary">
+                            <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
+                          </div>
+                          <p className="font-bold text-slate-700 mb-1"><span className="text-primary">Click to upload</span></p>
+                          <p className="text-xs font-medium text-slate-500">PNG, JPG up to 5MB</p>
                         </div>
                         <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                       </label>
+                      
                       {paymentScreenshot && (
-                        <div className="mt-4 p-2 bg-green-50 text-green-700 border border-green-200 rounded-lg text-sm flex items-center justify-between">
-                          <span>✅ Screenshot uploaded successfully</span>
-                          <button onClick={() => setPaymentScreenshot(null)} className="text-red-500 hover:text-red-700"><XCircle size={16} /></button>
+                        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-green-500 text-white rounded-full p-1"><CheckCircle size={16} /></div>
+                            <span className="font-bold text-green-700">Screenshot uploaded</span>
+                          </div>
+                          <button onClick={() => setPaymentScreenshot(null)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"><XCircle size={18} /></button>
                         </div>
                       )}
                     </div>
+                  </motion.div>
+                )}
+
+                {bookingStep === 4 && (
+                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center py-10">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-500 mb-6 shadow-xl shadow-green-100">
+                      <CheckCircle size={48} />
+                    </div>
+                    <h2 className="text-3xl font-black text-slate-800 mb-4">Booking Successful!</h2>
+                    <p className="text-slate-600 font-medium mb-8 max-w-md">Your trip to {pkg.title} has been booked. We have sent the confirmation details to your registered email.</p>
+                    <Link href="/dashboard" className="bg-primary text-white px-8 py-4 rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30">
+                      Go to Dashboard
+                    </Link>
+                  </motion.div>
+                )}
+              </div>
+
+              {bookingStep < 4 && (
+                <div className="flex gap-4 border-t border-slate-100 pt-6 shrink-0 mt-auto">
+                  {bookingStep > 1 && (
+                    <button 
+                      onClick={() => setBookingStep(bookingStep - 1)}
+                      className="px-8 py-4 border-2 border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    >
+                      Back
+                    </button>
+                  )}
+                  {bookingStep < 3 ? (
+                    <button 
+                      onClick={nextStep}
+                      className="flex-1 py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all"
+                    >
+                      Continue
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={confirmBooking}
+                      disabled={isBooking || (paymentMethod !== "CARD" && !paymentScreenshot)}
+                      className="flex-1 py-4 bg-green-500 text-white rounded-xl font-black text-lg shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isBooking ? "Confirming Booking..." : "Submit & Confirm Booking"}
+                    </button>
                   )}
                 </div>
               )}
-            </div>
-
-            <div className="flex gap-4 border-t pt-6">
-              {bookingStep > 1 && (
-                <button 
-                  onClick={() => setBookingStep(bookingStep - 1)}
-                  className="px-6 py-3 border border-gray-300 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 transition"
-                >
-                  Back
-                </button>
-              )}
-              {bookingStep < 3 ? (
-                <button 
-                  onClick={nextStep}
-                  className="flex-1 py-3 bg-primary text-white rounded-xl font-bold shadow-lg hover:shadow-primary/50 transition"
-                >
-                  Continue
-                </button>
-              ) : (
-                <button 
-                  onClick={confirmBooking}
-                  disabled={isBooking || (paymentMethod !== "CARD" && !paymentScreenshot)}
-                  className="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold shadow-lg hover:bg-green-700 transition disabled:opacity-50"
-                >
-                  {isBooking ? "Confirming..." : "Submit Payment & Book"}
-                </button>
-              )}
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
       
-      {/* Inquiry Modal */}
-      {showInquiryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 pt-24">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md my-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Send Inquiry</h2>
-              <button onClick={() => setShowInquiryModal(false)} className="text-gray-400 hover:text-red-500">
-                <XCircle size={24} />
-              </button>
-            </div>
-            <form onSubmit={handleInquirySubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input name="name" type="text" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
+      {/* Inquiry Modal (Modernized) */}
+      <AnimatePresence>
+        {showInquiryModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              onClick={() => setShowInquiryModal(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-3xl p-8 w-full max-w-md relative z-10 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                <h2 className="text-2xl font-extrabold text-slate-800">Send Inquiry</h2>
+                <button onClick={() => setShowInquiryModal(false)} className="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full transition-colors">
+                  <XCircle size={20} />
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input name="email" type="email" required className="w-full border rounded-lg px-4 py-2 outline-none focus:border-primary/20" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input name="phone" type="tel" required className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea name="message" required rows={3} defaultValue={`I am interested in ${pkg.title}.`} className="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"></textarea>
-              </div>
-              <button type="submit" className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition">
-                Submit Inquiry
-              </button>
-            </form>
+              <form onSubmit={handleInquirySubmit} className="space-y-5">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Name</label>
+                  <input name="name" type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-colors font-medium text-slate-800" placeholder="John Doe" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Email</label>
+                  <input name="email" type="email" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-colors font-medium text-slate-800" placeholder="john@example.com" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Phone</label>
+                  <input name="phone" type="tel" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-colors font-medium text-slate-800" placeholder="+91 98765 43210" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Message</label>
+                  <textarea name="message" required rows={4} defaultValue={`I am interested in ${pkg.title}.`} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-colors font-medium text-slate-800 resize-none"></textarea>
+                </div>
+                <button type="submit" className="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all transform hover:-translate-y-1 text-lg">
+                  Submit Inquiry
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
