@@ -1,15 +1,13 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, HTMLMotionProps } from "framer-motion";
 import { ReactNode } from "react";
 
-interface AnimationProps {
-  children: ReactNode;
+interface AnimationProps extends HTMLMotionProps<"div"> {
   delay?: number;
-  className?: string;
 }
 
-export function FadeIn({ children, delay = 0, className = "" }: AnimationProps) {
+export function FadeIn({ children, delay = 0, className = "", ...props }: AnimationProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -17,13 +15,14 @@ export function FadeIn({ children, delay = 0, className = "" }: AnimationProps) 
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.6, delay }}
       className={className}
+      {...props}
     >
       {children}
     </motion.div>
   );
 }
 
-export function SlideUp({ children, delay = 0, className = "" }: AnimationProps) {
+export function SlideUp({ children, delay = 0, className = "", ...props }: AnimationProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -31,13 +30,14 @@ export function SlideUp({ children, delay = 0, className = "" }: AnimationProps)
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.6, delay }}
       className={className}
+      {...props}
     >
       {children}
     </motion.div>
   );
 }
 
-export function ScaleIn({ children, delay = 0, className = "" }: AnimationProps) {
+export function ScaleIn({ children, delay = 0, className = "", ...props }: AnimationProps) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -45,13 +45,14 @@ export function ScaleIn({ children, delay = 0, className = "" }: AnimationProps)
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay }}
       className={className}
+      {...props}
     >
       {children}
     </motion.div>
   );
 }
 
-export function StaggerContainer({ children, className = "" }: AnimationProps) {
+export function StaggerContainer({ children, className = "", ...props }: HTMLMotionProps<"div">) {
   return (
     <motion.div
       initial="hidden"
@@ -62,13 +63,14 @@ export function StaggerContainer({ children, className = "" }: AnimationProps) {
         hidden: {},
       }}
       className={className}
+      {...props}
     >
       {children}
     </motion.div>
   );
 }
 
-export function StaggerItem({ children, className = "" }: { children: ReactNode, className?: string }) {
+export function StaggerItem({ children, className = "", ...props }: HTMLMotionProps<"div">) {
   return (
     <motion.div
       variants={{
@@ -76,6 +78,7 @@ export function StaggerItem({ children, className = "" }: { children: ReactNode,
         hidden: { opacity: 0, y: 20 },
       }}
       className={className}
+      {...props}
     >
       {children}
     </motion.div>
