@@ -15,21 +15,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.disconnectDatabase = exports.connectDatabase = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+if (process.env.NODE_ENV !== 'production') {
+    dotenv_1.default.config();
+}
 // 7. Improve startup validation
 const databaseUrl = process.env.DATABASE_URL;
+// STEP 10: If DATABASE_URL is missing
 if (!databaseUrl) {
-    console.error('❌ DATABASE_URL is missing. Please configure it in your environment variables.');
-    process.exit(1); // Exit gracefully, never default to localhost
+    console.error('DATABASE_URL environment variable is not configured.');
+    process.exit(1);
 }
-// Optional: Extract db host for logging without exposing passwords
+// STEP 5: Print safely without password
 let dbHost = 'Unknown';
+let dbPort = 'Unknown';
+let dbName = 'Unknown';
+let dbProvider = 'MySQL'; // Assuming MySQL for now based on context
 try {
     const url = new URL(databaseUrl);
     dbHost = url.hostname;
+    dbPort = url.port || '3306';
+    dbName = url.pathname.replace('/', '');
+    // STEP 6: If hostname is localhost
+    if (dbHost === 'localhost' || dbHost === '127.0.0.1') {
+        throw new Error('Production cannot use localhost database.');
+    }
 }
 catch (e) {
-    // Ignore URL parse error
+    if (e.message === 'Production cannot use localhost database.') {
+        console.error(e.message);
+        process.exit(1);
+    }
+    // Ignore purely URL parse errors but continue execution
 }
 const prisma = new client_1.PrismaClient({
     datasources: {
@@ -41,20 +57,18 @@ const prisma = new client_1.PrismaClient({
 });
 const connectDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // 6. Startup order: Generate Prisma Client -> Connect using DATABASE_URL -> Run migration or db push -> Start Express server
-        // We will do validation here first
         yield prisma.$connect();
-        // 8. Improve server startup logging
         console.log(`✅ Prisma connected successfully`);
-        console.log(`🔌 Database Provider: MySQL`);
+        console.log(`🔌 Database Provider: ${dbProvider}`);
         console.log(`🌐 Database Host: ${dbHost}`);
+        console.log(`🚪 Database Port: ${dbPort}`);
+        console.log(`📂 Database Name: ${dbName}`);
     }
     catch (error) {
-        // 12. Improve production error handling
         console.error(`❌ Database connection failed.`);
         console.error(`Reason: ${error.message || error}`);
         console.error('Exiting gracefully.');
-        process.exit(1); // Do not crash with unhandled stack traces
+        process.exit(1);
     }
 });
 exports.connectDatabase = connectDatabase;

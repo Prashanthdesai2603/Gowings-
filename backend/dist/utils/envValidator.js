@@ -5,7 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateEnvVariables = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+if (process.env.NODE_ENV !== 'production') {
+    dotenv_1.default.config();
+}
 const validateEnvVariables = () => {
     const requiredVariables = [
         'DATABASE_URL',

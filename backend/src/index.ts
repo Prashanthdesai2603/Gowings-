@@ -6,7 +6,9 @@ import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 import { connectDatabase, disconnectDatabase } from './config/db';
 import prisma from './config/db';
@@ -110,6 +112,11 @@ app.use(errorHandler);
 
 // Start the server only after connecting to the DB
 const startServer = async () => {
+  // 9. Improve startup validation. Print before connecting.
+  console.log(`\n--- Server Startup ---`);
+  console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV || 'Production'}`);
+  console.log(`🚀 PORT: ${PORT}`);
+
   // 6. Startup order: connect database first
   await connectDatabase();
   
@@ -117,8 +124,7 @@ const startServer = async () => {
     // 8. Improve server startup logging
     console.log(`✅ Application started successfully`);
     console.log(`🟢 Node Version: ${process.version}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'Production'}`);
-    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`----------------------\n`);
   });
 
   // Graceful shutdown

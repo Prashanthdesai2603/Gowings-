@@ -19,7 +19,9 @@ const path_1 = __importDefault(require("path"));
 const helmet_1 = __importDefault(require("helmet"));
 const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
-dotenv_1.default.config();
+if (process.env.NODE_ENV !== 'production') {
+    dotenv_1.default.config();
+}
 const db_1 = require("./config/db");
 const db_2 = __importDefault(require("./config/db"));
 const envValidator_1 = require("./utils/envValidator");
@@ -109,14 +111,17 @@ app.use((req, res) => {
 app.use(errorHandler_1.errorHandler);
 // Start the server only after connecting to the DB
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
+    // 9. Improve startup validation. Print before connecting.
+    console.log(`\n--- Server Startup ---`);
+    console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV || 'Production'}`);
+    console.log(`🚀 PORT: ${PORT}`);
     // 6. Startup order: connect database first
     yield (0, db_1.connectDatabase)();
     const server = app.listen(PORT, () => {
         // 8. Improve server startup logging
         console.log(`✅ Application started successfully`);
         console.log(`🟢 Node Version: ${process.version}`);
-        console.log(`🌍 Environment: ${process.env.NODE_ENV || 'Production'}`);
-        console.log(`🚀 Server is running on port ${PORT}`);
+        console.log(`----------------------\n`);
     });
     // Graceful shutdown
     const gracefulShutdown = () => __awaiter(void 0, void 0, void 0, function* () {
