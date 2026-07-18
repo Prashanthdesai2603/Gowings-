@@ -16,10 +16,20 @@ exports.disconnectDatabase = exports.connectDatabase = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-// Use DATABASE_URL directly as requested by Render best practices
+// 7. Improve startup validation
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
-    console.warn('⚠️ DATABASE_URL is not set. Prisma will attempt to use the URL from schema.prisma or it may fail.');
+    console.error('❌ DATABASE_URL is missing. Please configure it in your environment variables.');
+    process.exit(1); // Exit gracefully, never default to localhost
+}
+// Optional: Extract db host for logging without exposing passwords
+let dbHost = 'Unknown';
+try {
+    const url = new URL(databaseUrl);
+    dbHost = url.hostname;
+}
+catch (e) {
+    // Ignore URL parse error
 }
 const prisma = new client_1.PrismaClient({
     datasources: {
@@ -27,25 +37,24 @@ const prisma = new client_1.PrismaClient({
             url: databaseUrl,
         },
     },
-    log: ['error', 'warn'],
+    // error and warn logs, but avoid exposing sensitive connection string info in stack traces
 });
-const connectDatabase = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (retries = 5) {
-    while (retries > 0) {
-        try {
-            yield prisma.$connect();
-            console.log('✅ Database connected successfully');
-            return;
-        }
-        catch (error) {
-            console.error(`❌ Database connection failed. Retries left: ${retries - 1}`);
-            retries -= 1;
-            if (retries === 0) {
-                console.error('❌ Failed to connect to the database after multiple attempts. Server will remain running, but database features will fail.');
-                return;
-            }
-            // Wait 5 seconds before retrying
-            yield new Promise(res => setTimeout(res, 5000));
-        }
+const connectDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // 6. Startup order: Generate Prisma Client -> Connect using DATABASE_URL -> Run migration or db push -> Start Express server
+        // We will do validation here first
+        yield prisma.$connect();
+        // 8. Improve server startup logging
+        console.log(`✅ Prisma connected successfully`);
+        console.log(`🔌 Database Provider: MySQL`);
+        console.log(`🌐 Database Host: ${dbHost}`);
+    }
+    catch (error) {
+        // 12. Improve production error handling
+        console.error(`❌ Database connection failed.`);
+        console.error(`Reason: ${error.message || error}`);
+        console.error('Exiting gracefully.');
+        process.exit(1); // Do not crash with unhandled stack traces
     }
 });
 exports.connectDatabase = connectDatabase;

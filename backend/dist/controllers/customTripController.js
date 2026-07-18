@@ -8,11 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMyCustomTripRequests = exports.respondToCustomTrip = exports.getCustomTripRequests = exports.submitCustomTripRequest = void 0;
-const client_1 = require("@prisma/client");
+const db_1 = __importDefault(require("../config/db"));
 const sendEmail_1 = require("../utils/sendEmail");
-const prisma = new client_1.PrismaClient();
 const submitCustomTripRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, email, phone, destination, travelers, dates, budget, requirements } = req.body;
@@ -20,7 +22,7 @@ const submitCustomTripRequest = (req, res) => __awaiter(void 0, void 0, void 0, 
         if (!name || !email || !phone || !destination) {
             return res.status(400).json({ error: 'Name, email, phone, and destination are required' });
         }
-        const newRequest = yield prisma.customizedTripRequest.create({
+        const newRequest = yield db_1.default.customizedTripRequest.create({
             data: {
                 name,
                 email,
@@ -42,7 +44,7 @@ const submitCustomTripRequest = (req, res) => __awaiter(void 0, void 0, void 0, 
 exports.submitCustomTripRequest = submitCustomTripRequest;
 const getCustomTripRequests = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const requests = yield prisma.customizedTripRequest.findMany({
+        const requests = yield db_1.default.customizedTripRequest.findMany({
             orderBy: { createdAt: 'desc' }
         });
         res.status(200).json({ requests });
@@ -64,7 +66,7 @@ const respondToCustomTrip = (req, res) => __awaiter(void 0, void 0, void 0, func
         // In a real application, you would integrate Nodemailer or SendGrid here
         // to actually email the user using the request.email address.
         console.log(`[SIMULATED EMAIL] Sending response for custom trip request ${id}:`, message);
-        const updatedRequest = yield prisma.customizedTripRequest.update({
+        const updatedRequest = yield db_1.default.customizedTripRequest.update({
             where: { id },
             data: {
                 status: 'PROPOSED',
@@ -110,11 +112,11 @@ const getMyCustomTripRequests = (req, res) => __awaiter(void 0, void 0, void 0, 
         if (!userId) {
             return res.status(401).json({ error: 'Unauthorized: User ID not found' });
         }
-        const user = yield prisma.user.findUnique({ where: { id: userId } });
+        const user = yield db_1.default.user.findUnique({ where: { id: userId } });
         if (!user || !user.email) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const requests = yield prisma.customizedTripRequest.findMany({
+        const requests = yield db_1.default.customizedTripRequest.findMany({
             where: { email: user.email },
             orderBy: { createdAt: 'desc' }
         });

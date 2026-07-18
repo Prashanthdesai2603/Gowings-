@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/db';
 import { sendEmail } from '../utils/sendEmail';
-
-const prisma = new PrismaClient();
 
 export const submitCustomTripRequest = async (req: Request, res: Response) => {
   try {

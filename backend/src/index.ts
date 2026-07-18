@@ -29,13 +29,7 @@ import contactRoutes from './routes/contactRoutes';
 import customTripRoutes from './routes/customTripRoutes';
 import trekRoutes from './routes/trekRoutes';
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://gowings-five.vercel.app'
-];
-if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
+const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -114,22 +108,30 @@ app.use((req, res) => {
 // Centralized error handler (must be registered last)
 app.use(errorHandler);
 
-// Start the server immediately so Render detects the port
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-// Initialize database connection in the background
-connectDatabase();
-
-// Graceful shutdown
-const gracefulShutdown = async () => {
-  console.log('Received shutdown signal, closing server and database...');
-  server.close(async () => {
-    await disconnectDatabase();
-    process.exit(0);
+// Start the server only after connecting to the DB
+const startServer = async () => {
+  // 6. Startup order: connect database first
+  await connectDatabase();
+  
+  const server = app.listen(PORT, () => {
+    // 8. Improve server startup logging
+    console.log(`✅ Application started successfully`);
+    console.log(`🟢 Node Version: ${process.version}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'Production'}`);
+    console.log(`🚀 Server is running on port ${PORT}`);
   });
+
+  // Graceful shutdown
+  const gracefulShutdown = async () => {
+    console.log('Received shutdown signal, closing server and database...');
+    server.close(async () => {
+      await disconnectDatabase();
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
 };
 
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);
+startServer();

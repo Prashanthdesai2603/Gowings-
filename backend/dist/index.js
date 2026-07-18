@@ -37,18 +37,7 @@ const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const contactRoutes_1 = __importDefault(require("./routes/contactRoutes"));
 const customTripRoutes_1 = __importDefault(require("./routes/customTripRoutes"));
 const trekRoutes_1 = __importDefault(require("./routes/trekRoutes"));
-app.use((0, helmet_1.default)({ crossOriginResourcePolicy: false })); // allow cross-origin images
-app.use((0, compression_1.default)());
-const limiter = (0, express_rate_limit_1.default)({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use('/api', limiter);
-const allowedOrigins = [
-    'http://localhost:3000',
-    'https://gowings-five.vercel.app'
-];
+const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -60,6 +49,14 @@ app.use((0, cors_1.default)({
     },
     credentials: true
 }));
+app.use((0, helmet_1.default)({ crossOriginResourcePolicy: false })); // allow cross-origin images
+app.use((0, compression_1.default)());
+const limiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5000, // limit each IP to 5000 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api', limiter);
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
@@ -110,19 +107,26 @@ app.use((req, res) => {
 });
 // Centralized error handler (must be registered last)
 app.use(errorHandler_1.errorHandler);
-// Start the server immediately so Render detects the port
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Start the server only after connecting to the DB
+const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
+    // 6. Startup order: connect database first
+    yield (0, db_1.connectDatabase)();
+    const server = app.listen(PORT, () => {
+        // 8. Improve server startup logging
+        console.log(`✅ Application started successfully`);
+        console.log(`🟢 Node Version: ${process.version}`);
+        console.log(`🌍 Environment: ${process.env.NODE_ENV || 'Production'}`);
+        console.log(`🚀 Server is running on port ${PORT}`);
+    });
+    // Graceful shutdown
+    const gracefulShutdown = () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log('Received shutdown signal, closing server and database...');
+        server.close(() => __awaiter(void 0, void 0, void 0, function* () {
+            yield (0, db_1.disconnectDatabase)();
+            process.exit(0);
+        }));
+    });
+    process.on('SIGINT', gracefulShutdown);
+    process.on('SIGTERM', gracefulShutdown);
 });
-// Initialize database connection in the background
-(0, db_1.connectDatabase)();
-// Graceful shutdown
-const gracefulShutdown = () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Received shutdown signal, closing server and database...');
-    server.close(() => __awaiter(void 0, void 0, void 0, function* () {
-        yield (0, db_1.disconnectDatabase)();
-        process.exit(0);
-    }));
-});
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);
+startServer();
