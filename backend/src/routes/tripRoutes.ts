@@ -4,10 +4,10 @@ import { authenticate, authorizeAdmin } from '../middlewares/auth';
 
 const router = Router();
 
-router.get('/', getTrips as any);
-router.get('/:slug', getTripBySlug as any);
-router.post('/', authenticate as any, authorizeAdmin as any, createTrip as any);
-router.put('/:id', authenticate as any, authorizeAdmin as any, updateTrip as any);
-router.delete('/:id', authenticate as any, authorizeAdmin as any, deleteTrip as any);
+router.get('/', getTrips);
+router.get('/:slug', getTripBySlug);
+router.post('/', authenticate, authorizeAdmin, createTrip);
+router.put('/:id', authenticate, authorizeAdmin, updateTrip);
+router.delete('/:id', authenticate, authorizeAdmin, deleteTrip);
 
 export default router;

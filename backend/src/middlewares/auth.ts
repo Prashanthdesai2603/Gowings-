@@ -1,14 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 
-export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    role: string;
-  };
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string;
+        role: string;
+      };
+    }
+  }
 }
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -26,7 +30,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 };
 
-export const authorizeAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authorizeAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (req.user && req.user.role === 'ADMIN') {
     next();
   } else {

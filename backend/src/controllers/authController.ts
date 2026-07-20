@@ -45,10 +45,10 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const getMe = async (req: any, res: Response) => {
+export const getMe = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
+      where: { id: req.user?.userId },
       select: { id: true, name: true, email: true, phone: true, role: true }
     });
     res.json(user);
@@ -57,11 +57,11 @@ export const getMe = async (req: any, res: Response) => {
   }
 };
 
-export const updateProfile = async (req: any, res: Response) => {
+export const updateProfile = async (req: Request, res: Response) => {
   try {
     const { name, phone } = req.body;
     const user = await prisma.user.update({
-      where: { id: req.user.userId },
+      where: { id: req.user?.userId },
       data: { name, phone },
       select: { id: true, name: true, email: true, phone: true, role: true }
     });
@@ -71,10 +71,10 @@ export const updateProfile = async (req: any, res: Response) => {
   }
 };
 
-export const updatePassword = async (req: any, res: Response) => {
+export const updatePassword = async (req: Request, res: Response) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
+    const user = await prisma.user.findUnique({ where: { id: req.user?.userId } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
@@ -82,7 +82,7 @@ export const updatePassword = async (req: any, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
-      where: { id: req.user.userId },
+      where: { id: req.user?.userId },
       data: { password: hashedPassword }
     });
 

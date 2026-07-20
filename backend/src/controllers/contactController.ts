@@ -85,7 +85,7 @@ export const respondToContactRequest = async (req: Request, res: Response) => {
 
 export const getMyContactRequests = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.userId;
+    const userId = req.user?.userId;
 
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Unauthorized: User ID not found' });

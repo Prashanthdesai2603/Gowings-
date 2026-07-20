@@ -4,10 +4,10 @@ import { authenticate, authorizeAdmin } from '../middlewares/auth';
 
 const router = Router();
 
-router.get('/', getTreks as any);
-router.get('/:slug', getTrekBySlug as any);
-router.post('/', authenticate as any, authorizeAdmin as any, createTrek as any);
-router.put('/:id', authenticate as any, authorizeAdmin as any, updateTrek as any);
-router.delete('/:id', authenticate as any, authorizeAdmin as any, deleteTrek as any);
+router.get('/', getTreks);
+router.get('/:slug', getTrekBySlug);
+router.post('/', authenticate, authorizeAdmin, createTrek);
+router.put('/:id', authenticate, authorizeAdmin, updateTrek);
+router.delete('/:id', authenticate, authorizeAdmin, deleteTrek);
 
 export default router;

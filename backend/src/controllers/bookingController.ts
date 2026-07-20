@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import prisma from '../config/db';
 
 // Create a new booking
-export const createBooking = async (req: any, res: Response) => {
+export const createBooking = async (req: Request, res: Response) => {
   try {
     const { tripId, travelerDetails, totalAmount, paymentMethod, paymentScreenshot } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
 
     const bookingData: any = {
       userId,
@@ -38,9 +38,9 @@ export const createBooking = async (req: any, res: Response) => {
 };
 
 // Get my bookings (Customer)
-export const getMyBookings = async (req: any, res: Response) => {
+export const getMyBookings = async (req: Request, res: Response) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user?.userId;
     const bookings = await prisma.booking.findMany({
       where: { userId },
       include: { trip: true, payment: true }

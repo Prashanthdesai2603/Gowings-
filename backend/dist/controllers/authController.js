@@ -55,9 +55,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.login = login;
 const getMe = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const user = yield db_1.default.user.findUnique({
-            where: { id: req.user.userId },
+            where: { id: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId },
             select: { id: true, name: true, email: true, phone: true, role: true }
         });
         res.json(user);
@@ -68,10 +69,11 @@ const getMe = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getMe = getMe;
 const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { name, phone } = req.body;
         const user = yield db_1.default.user.update({
-            where: { id: req.user.userId },
+            where: { id: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId },
             data: { name, phone },
             select: { id: true, name: true, email: true, phone: true, role: true }
         });
@@ -83,9 +85,10 @@ const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.updateProfile = updateProfile;
 const updatePassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const { currentPassword, newPassword } = req.body;
-        const user = yield db_1.default.user.findUnique({ where: { id: req.user.userId } });
+        const user = yield db_1.default.user.findUnique({ where: { id: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId } });
         if (!user)
             return res.status(404).json({ message: 'User not found' });
         const isMatch = yield bcryptjs_1.default.compare(currentPassword, user.password);
@@ -93,7 +96,7 @@ const updatePassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return res.status(400).json({ message: 'Incorrect current password' });
         const hashedPassword = yield bcryptjs_1.default.hash(newPassword, 10);
         yield db_1.default.user.update({
-            where: { id: req.user.userId },
+            where: { id: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId },
             data: { password: hashedPassword }
         });
         res.json({ message: 'Password updated successfully' });

@@ -5,11 +5,11 @@ import { authenticate, authorizeAdmin } from '../middlewares/auth';
 const router = Router();
 
 // Customer routes
-router.post('/', authenticate as any, createBooking as any);
-router.get('/my-bookings', authenticate as any, getMyBookings as any);
+router.post('/', authenticate, createBooking);
+router.get('/my-bookings', authenticate, getMyBookings);
 
 // Admin routes
-router.get('/', authenticate as any, authorizeAdmin as any, getAllBookings as any);
-router.patch('/:id/status', authenticate as any, authorizeAdmin as any, updateBookingStatus as any);
+router.get('/', authenticate, authorizeAdmin, getAllBookings);
+router.patch('/:id/status', authenticate, authorizeAdmin, updateBookingStatus);
 
 export default router;

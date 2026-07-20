@@ -4,10 +4,10 @@ import { authenticate } from '../middlewares/auth';
 
 const router = Router();
 
-router.post('/register', register as any);
-router.post('/login', login as any);
-router.get('/me', authenticate as any, getMe as any);
-router.put('/profile', authenticate as any, updateProfile as any);
-router.put('/password', authenticate as any, updatePassword as any);
+router.post('/register', register);
+router.post('/login', login);
+router.get('/me', authenticate, getMe);
+router.put('/profile', authenticate, updateProfile);
+router.put('/password', authenticate, updatePassword);
 
 export default router;

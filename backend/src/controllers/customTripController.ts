@@ -100,7 +100,7 @@ export const respondToCustomTrip = async (req: Request, res: Response) => {
 export const getMyCustomTripRequests = async (req: Request, res: Response) => {
   try {
     // req.user is set by the authenticate middleware
-    const userId = (req as any).user?.userId;
+    const userId = req.user?.userId;
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized: User ID not found' });

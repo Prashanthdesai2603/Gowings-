@@ -5,14 +5,14 @@ import { authenticate, authorizeAdmin } from '../middlewares/auth';
 const router = Router();
 
 // Apply auth middlewares to all admin routes
-router.use(authenticate as any);
-router.use(authorizeAdmin as any);
+router.use(authenticate);
+router.use(authorizeAdmin);
 
-router.get('/dashboard', getDashboardStats as any);
-router.get('/customers', getCustomers as any);
-router.get('/payments', getPayments as any);
-router.patch('/payments/:id/status', updatePaymentStatus as any);
-router.get('/settings', getSettings as any);
-router.put('/settings', updateSettings as any);
+router.get('/dashboard', getDashboardStats);
+router.get('/customers', getCustomers);
+router.get('/payments', getPayments);
+router.patch('/payments/:id/status', updatePaymentStatus);
+router.get('/settings', getSettings);
+router.put('/settings', updateSettings);
 
 export default router;

@@ -16,9 +16,10 @@ exports.updateBookingStatus = exports.getAllBookings = exports.getMyBookings = e
 const db_1 = __importDefault(require("../config/db"));
 // Create a new booking
 const createBooking = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { tripId, travelerDetails, totalAmount, paymentMethod, paymentScreenshot } = req.body;
-        const userId = req.user.userId;
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
         const bookingData = {
             userId,
             tripId,
@@ -49,8 +50,9 @@ const createBooking = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.createBooking = createBooking;
 // Get my bookings (Customer)
 const getMyBookings = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const userId = req.user.userId;
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
         const bookings = yield db_1.default.booking.findMany({
             where: { userId },
             include: { trip: true, payment: true }

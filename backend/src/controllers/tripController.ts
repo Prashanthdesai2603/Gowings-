@@ -13,7 +13,7 @@ export const getTrips = async (req: Request, res: Response) => {
     const page = typeof req.query.page === 'string' ? parseInt(req.query.page) : 1;
     const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit) : 20;
     
-    const filter: any = {};
+    const filter: Record<string, any> = {};
     if (category) filter.category = { name: category };
     if (destination) filter.destination = { name: destination };
     if (featured === 'true') filter.isFeatured = true;
