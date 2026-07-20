@@ -19,12 +19,7 @@ if (process.env.NODE_ENV !== 'production') {
     dotenv_1.default.config();
 }
 // 7. Improve startup validation
-const databaseUrl = process.env.DATABASE_URL;
-// STEP 10: If DATABASE_URL is missing
-if (!databaseUrl) {
-    console.error('DATABASE_URL environment variable is not configured.');
-    process.exit(1);
-}
+const databaseUrl = process.env.DATABASE_URL || '';
 // STEP 5: Print safely without password
 let dbHost = 'Unknown';
 let dbPort = 'Unknown';

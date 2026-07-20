@@ -40,16 +40,20 @@ This application is configured for easy deployment on [Render](https://render.co
 
 ### Required Environment Variables on Render
 You must configure the following in the Render dashboard (Environment tab):
-- `DATABASE_URL`: Your production MySQL connection string (e.g., from Aiven, PlanetScale, or a custom VPS).
+- `DATABASE_URL`: Your production MySQL connection string.
+- `PORT`: (Render usually provides this automatically).
+- `NODE_ENV`: Must be set to `production`.
 - `JWT_SECRET`: A strong, secure secret string.
 - `FRONTEND_URL`: URL of your deployed frontend.
-- `PORT`: (Render usually provides this automatically).
+- `EMAIL_USER`: Email user for Nodemailer.
+- `EMAIL_PASS`: Email password for Nodemailer.
 
-### Build Process
-The build process automatically handles Prisma generation and database migrations. It will:
-1. Generate the Prisma Client.
-2. Check for existing migrations and run `npx prisma migrate deploy`. If none exist, it gracefully falls back to `npx prisma db push`.
-3. Compile TypeScript to JavaScript.
+### Example DATABASE_URL format
+`mysql://<user>:<password>@<host>:<port>/<database>`
+
+### Prisma Deployment Instructions
+The `npm run build` command automatically triggers Prisma client generation. Wait for the build to finish before trying to start the app.
+When setting up for the first time, ensure your database schema is up-to-date. You may need to run `npx prisma db push` or `npx prisma migrate deploy` locally pointing to the production database URL, or set up a custom build script to run migrations.
 
 ### Troubleshooting Database Connections
 

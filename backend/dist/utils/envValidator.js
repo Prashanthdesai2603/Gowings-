@@ -11,14 +11,21 @@ if (process.env.NODE_ENV !== 'production') {
 const validateEnvVariables = () => {
     const requiredVariables = [
         'DATABASE_URL',
-        'JWT_SECRET',
         'PORT',
+        'NODE_ENV',
+        'JWT_SECRET',
+        'FRONTEND_URL',
+        'EMAIL_USER',
+        'EMAIL_PASS',
     ];
-    const missingVariables = requiredVariables.filter((variable) => !process.env[variable]);
-    if (missingVariables.length > 0) {
-        console.error('❌ Missing required environment variables:');
-        missingVariables.forEach((variable) => console.error(`  - ${variable}`));
-        console.error('Please configure them in your .env file or deployment environment.');
+    let hasError = false;
+    requiredVariables.forEach((variable) => {
+        if (!process.env[variable]) {
+            console.error(`${variable} environment variable is not configured.`);
+            hasError = true;
+        }
+    });
+    if (hasError) {
         process.exit(1);
     }
     console.log('✅ Environment variables validated successfully.');
