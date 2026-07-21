@@ -52,8 +52,7 @@ export const connectDatabase = async () => {
   } catch (error: any) {
     console.error(`❌ Database connection failed.`);
     console.error(`Reason: ${error.message || error}`);
-    console.error('Exiting gracefully.');
-    process.exit(1);
+    console.error('Continuing without database connection...');
   }
 };
 

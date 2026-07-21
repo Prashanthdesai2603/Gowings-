@@ -55,7 +55,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight OPTIONS requests
+app.options('/{*any}', cors(corsOptions)); // Handle preflight OPTIONS requests
 
 app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
 app.use(compression());

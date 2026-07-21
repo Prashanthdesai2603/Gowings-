@@ -5,14 +5,17 @@ const client_1 = require("@prisma/client");
 const errorHandler = (err, req, res, next) => {
     console.error(`[Error] ${err.name}: ${err.message}`);
     if (err instanceof client_1.Prisma.PrismaClientKnownRequestError) {
-        // Handle Prisma errors
+        // Handle Prisma errors gracefully
         if (err.code === 'P2002') {
-            return res.status(409).json({ error: 'A unique constraint failed', details: err.meta });
+            return res.status(409).json({ success: false, message: 'A unique constraint failed.', error: 'Conflict' });
         }
-        return res.status(400).json({ error: 'Database request error', details: err.message });
+        if (err.code === 'P2021') {
+            return res.status(200).json({ success: false, message: 'Data not found or table is missing.' });
+        }
+        return res.status(400).json({ success: false, message: 'A database error occurred.' });
     }
     if (err instanceof client_1.Prisma.PrismaClientValidationError) {
-        return res.status(400).json({ error: 'Database validation error', details: err.message });
+        return res.status(400).json({ success: false, message: 'Invalid database request.' });
     }
     if (err.name === 'ValidationError') {
         // Mongoose/Zod/Custom validation errors

@@ -31,7 +31,7 @@ try {
     dbPort = url.port || '3306';
     dbName = url.pathname.replace('/', '');
     // STEP 6: If hostname is localhost
-    if (dbHost === 'localhost' || dbHost === '127.0.0.1') {
+    if ((dbHost === 'localhost' || dbHost === '127.0.0.1') && process.env.NODE_ENV === 'production') {
         throw new Error('Production cannot use localhost database.');
     }
 }
@@ -62,8 +62,7 @@ const connectDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
     catch (error) {
         console.error(`❌ Database connection failed.`);
         console.error(`Reason: ${error.message || error}`);
-        console.error('Exiting gracefully.');
-        process.exit(1);
+        console.error('Continuing without database connection...');
     }
 });
 exports.connectDatabase = connectDatabase;

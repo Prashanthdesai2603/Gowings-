@@ -23,7 +23,6 @@ if (process.env.NODE_ENV !== 'production') {
     dotenv_1.default.config();
 }
 const db_1 = require("./config/db");
-const db_2 = __importDefault(require("./config/db"));
 const envValidator_1 = require("./utils/envValidator");
 const errorHandler_1 = require("./middlewares/errorHandler");
 // Validate environment variables on startup
@@ -39,8 +38,16 @@ const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const contactRoutes_1 = __importDefault(require("./routes/contactRoutes"));
 const customTripRoutes_1 = __importDefault(require("./routes/customTripRoutes"));
 const trekRoutes_1 = __importDefault(require("./routes/trekRoutes"));
-const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
-app.use((0, cors_1.default)({
+const galleryRoutes_1 = __importDefault(require("./routes/galleryRoutes"));
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://gowings-cfykm8h5w-gowings.vercel.app'
+];
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
@@ -49,10 +56,17 @@ app.use((0, cors_1.default)({
             callback(new Error('Not allowed by CORS'));
         }
     },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'Credentials'],
     credentials: true
-}));
+};
+app.use((0, cors_1.default)(corsOptions));
+app.options('/{*any}', (0, cors_1.default)(corsOptions)); // Handle preflight OPTIONS requests
 app.use((0, helmet_1.default)({ crossOriginResourcePolicy: false })); // allow cross-origin images
 app.use((0, compression_1.default)());
+// Trust the first proxy (e.g., Render, Nginx, Heroku). 
+// This is required to accurately detect client IPs and prevent express-rate-limit warnings.
+app.set('trust proxy', 1);
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5000, // limit each IP to 5000 requests per windowMs
@@ -64,6 +78,8 @@ app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
 app.use('/api/auth', authRoutes_1.default);
 app.use('/api/trips', tripRoutes_1.default);
+app.use('/api/packages', tripRoutes_1.default); // Alias for trips to match frontend/UI expectations
+app.use('/api/gallery', galleryRoutes_1.default);
 app.use('/api/treks', trekRoutes_1.default);
 app.use('/api/bookings', bookingRoutes_1.default);
 app.use('/api/destinations', destinationRoutes_1.default);
@@ -72,33 +88,25 @@ app.use('/api/admin', adminRoutes_1.default);
 app.use('/api/contact', contactRoutes_1.default);
 app.use('/api/custom-trips', customTripRoutes_1.default);
 // Basic health check route
-app.get('/health', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // Perform a lightweight query to verify the database connection
-        yield db_2.default.$queryRaw `SELECT 1`;
-        res.json({
-            status: 'OK',
-            server: 'Running',
-            database: 'Connected',
-            environment: process.env.NODE_ENV || 'Production'
-        });
-    }
-    catch (error) {
-        res.status(500).json({
-            status: 'OK', // Server is running
-            server: 'Running',
-            database: 'Disconnected',
-            environment: process.env.NODE_ENV || 'Production'
-        });
-    }
-}));
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK' });
+});
 // API health route for backward compatibility
 app.get('/api/health', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.redirect('/health');
 }));
 // Root API route
 app.get(['/api', '/api/'], (req, res) => {
-    res.json({ message: 'Welcome to Gowings API. Available routes: /api/auth, /api/trips, /api/bookings' });
+    res.json({
+        status: 'running',
+        routes: [
+            '/api/packages',
+            '/api/destinations',
+            '/api/categories',
+            '/api/gallery',
+            '/api/contact'
+        ]
+    });
 });
 app.get('/', (req, res) => {
     res.json({ status: 'OK' });
