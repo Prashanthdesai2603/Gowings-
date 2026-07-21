@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/api/'],
     },
-    sitemap: 'https://gowings.onrender.com/sitemap.xml',
+    sitemap: `${process.env.NEXT_PUBLIC_FRONTEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/sitemap.xml`,
   };
 }

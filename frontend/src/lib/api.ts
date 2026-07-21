@@ -3,7 +3,7 @@
  */
 
 // Global API URL setup
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://gowings.onrender.com";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 /**
  * A wrapper around fetch that provides global error handling if the backend is unavailable.
