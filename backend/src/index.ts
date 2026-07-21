@@ -32,17 +32,30 @@ import customTripRoutes from './routes/customTripRoutes';
 import trekRoutes from './routes/trekRoutes';
 import galleryRoutes from './routes/galleryRoutes';
 
-const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
-app.use(cors({
-  origin: function (origin, callback) {
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://gowings-cfykm8h5w-gowings.vercel.app'
+];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+const corsOptions = {
+  origin: function (origin: any, callback: any) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'Credentials'],
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight OPTIONS requests
 
 app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
 app.use(compression());
