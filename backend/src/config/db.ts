@@ -21,7 +21,7 @@ try {
   dbName = url.pathname.replace('/', '');
   
   // STEP 6: If hostname is localhost
-  if (dbHost === 'localhost' || dbHost === '127.0.0.1') {
+  if ((dbHost === 'localhost' || dbHost === '127.0.0.1') && process.env.NODE_ENV === 'production') {
     throw new Error('Production cannot use localhost database.');
   }
 } catch (e: any) {

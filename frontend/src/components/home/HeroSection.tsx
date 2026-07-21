@@ -49,19 +49,9 @@ export default function HeroSection() {
 
   return (
     <div className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden bg-slate-900 pt-20 pb-32">
-      {/* Background Video */}
+      {/* Premium Gradient Overlay */}
       <div className="absolute inset-0 z-0">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-80"
-        >
-          <source src="/videos/hero-bg.mp4" type="video/mp4" />
-        </video>
-        {/* Premium Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-slate-900/90 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-800 via-slate-900 to-slate-900 z-0" />
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 text-center flex flex-col items-center">
