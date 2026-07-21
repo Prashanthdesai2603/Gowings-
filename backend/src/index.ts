@@ -30,6 +30,7 @@ import categoryRoutes from './routes/categoryRoutes';
 import contactRoutes from './routes/contactRoutes';
 import customTripRoutes from './routes/customTripRoutes';
 import trekRoutes from './routes/trekRoutes';
+import galleryRoutes from './routes/galleryRoutes';
 
 const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
 app.use(cors({
@@ -59,6 +60,8 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/trips', tripRoutes);
+app.use('/api/packages', tripRoutes); // Alias for trips to match frontend/UI expectations
+app.use('/api/gallery', galleryRoutes);
 app.use('/api/treks', trekRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/destinations', destinationRoutes);
@@ -68,24 +71,8 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/custom-trips', customTripRoutes);
 
 // Basic health check route
-app.get('/health', async (req, res) => {
-  try {
-    // Perform a lightweight query to verify the database connection
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({
-      status: 'OK',
-      server: 'Running',
-      database: 'Connected',
-      environment: process.env.NODE_ENV || 'Production'
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      status: 'OK', // Server is running
-      server: 'Running',
-      database: 'Disconnected',
-      environment: process.env.NODE_ENV || 'Production'
-    });
-  }
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK' });
 });
 
 // API health route for backward compatibility
@@ -95,7 +82,16 @@ app.get('/api/health', async (req, res) => {
 
 // Root API route
 app.get(['/api', '/api/'], (req, res) => {
-  res.json({ message: 'Welcome to Gowings API. Available routes: /api/auth, /api/trips, /api/bookings' });
+  res.json({
+    status: 'running',
+    routes: [
+      '/api/packages',
+      '/api/destinations',
+      '/api/categories',
+      '/api/gallery',
+      '/api/contact'
+    ]
+  });
 });
 
 app.get('/', (req, res) => {

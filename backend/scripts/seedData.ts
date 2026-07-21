@@ -149,6 +149,61 @@ async function main() {
   }
   console.log("Trips seeded.");
 
+  // Create Admin User
+  const bcrypt = require('bcryptjs');
+  const hashedPassword = await bcrypt.hash('admin123', 10);
+  await prisma.user.upsert({
+    where: { email: 'admin@gowings.com' },
+    update: {},
+    create: {
+      name: 'Admin',
+      email: 'admin@gowings.com',
+      password: hashedPassword,
+      role: 'ADMIN',
+    },
+  });
+  console.log("Admin seeded.");
+
+  // Create Company Details
+  await prisma.companyDetails.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      name: 'Gowings',
+      tagline: 'Your Trusted Travel Partner',
+      about: 'We provide the best travel experiences across the globe.',
+      address: '123 Travel Street',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      country: 'India',
+      postalCode: '560001',
+      phone1: '+91 9876543210',
+      email: 'contact@gowings.com',
+    }
+  });
+  console.log("Company details seeded.");
+
+  // Create Gallery
+  await prisma.gallery.createMany({
+    data: [
+      { imageUrl: 'https://images.unsplash.com/photo-1596423735880-5c6fa9586144', caption: 'Coorg Beauty', category: 'Nature' },
+      { imageUrl: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2', caption: 'Goa Beaches', category: 'Beach' }
+    ],
+    skipDuplicates: true
+  });
+  console.log("Gallery seeded.");
+
+  // Create Testimonials
+  await prisma.testimonial.createMany({
+    data: [
+      { name: 'John Doe', content: 'Amazing experience with Gowings!', rating: 5, isApproved: true },
+      { name: 'Jane Smith', content: 'Best trip ever.', rating: 4, isApproved: true }
+    ],
+    skipDuplicates: true
+  });
+  console.log("Testimonials seeded.");
+
   console.log("Database seed completed successfully.");
 }
 
