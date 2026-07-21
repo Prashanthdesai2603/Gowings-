@@ -60,6 +60,10 @@ app.options('*', cors(corsOptions)); // Handle preflight OPTIONS requests
 app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
 app.use(compression());
 
+// Trust the first proxy (e.g., Render, Nginx, Heroku). 
+// This is required to accurately detect client IPs and prevent express-rate-limit warnings.
+app.set('trust proxy', 1);
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5000, // limit each IP to 5000 requests per windowMs
