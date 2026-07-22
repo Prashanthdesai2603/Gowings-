@@ -162,7 +162,7 @@ export default function PackagesPage() {
                           <p className="text-xs text-gray-500 font-medium">Starting from</p>
                           <p className="text-xl font-bold text-primary">₹{pkg.price.toLocaleString('en-IN')}</p>
                         </div>
-                        <Link href={`/packages/${pkg.slug}`} className="bg-primary/10 text-primary hover:bg-primary hover:text-white px-5 py-2 rounded-lg font-semibold transition">
+                        <Link href={pkg.category?.name === "Trekking" ? `/trekking/${pkg.slug}` : `/packages/${pkg.slug}`} className="bg-primary/10 text-primary hover:bg-primary hover:text-white px-5 py-2 rounded-lg font-semibold transition">
                           View Details
                         </Link>
                       </div>

@@ -32,6 +32,13 @@ import customTripRoutes from './routes/customTripRoutes';
 import trekRoutes from './routes/trekRoutes';
 import galleryRoutes from './routes/galleryRoutes';
 
+// Trust the first proxy (e.g., Render, Nginx, Heroku). 
+// This is required to accurately detect client IPs and prevent express-rate-limit warnings.
+app.set('trust proxy', 1);
+
+app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
+app.use(compression());
+
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -43,9 +50,16 @@ if (process.env.FRONTEND_URL) {
 
 const corsOptions = {
   origin: function (origin: any, callback: any) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const isAllowed = !origin || allowedOrigins.includes(origin);
+    
+    console.log(`[CORS] Origin: ${origin || 'undefined'}`);
+    console.log(`[CORS] Allowed Origins: ${allowedOrigins.join(', ')}`);
+    
+    if (isAllowed) {
+      console.log(`[CORS] Accepted`);
       callback(null, true);
     } else {
+      console.log(`[CORS] Rejected. Reason: Origin not in allowed list.`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -56,13 +70,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('/{*any}', cors(corsOptions)); // Handle preflight OPTIONS requests
-
-app.use(helmet({ crossOriginResourcePolicy: false })); // allow cross-origin images
-app.use(compression());
-
-// Trust the first proxy (e.g., Render, Nginx, Heroku). 
-// This is required to accurately detect client IPs and prevent express-rate-limit warnings.
-app.set('trust proxy', 1);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

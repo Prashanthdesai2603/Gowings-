@@ -132,10 +132,10 @@ export default function FeaturedPackages() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mt-6">
-                      <Link href={`/packages/${pkg.slug}`} className="py-3 border-2 border-slate-200 text-slate-700 rounded-xl font-bold text-center hover:bg-slate-50 hover:border-slate-300 transition-all">
+                      <Link href={pkg.category?.name === "Trekking" ? `/trekking/${pkg.slug}` : `/packages/${pkg.slug}`} className="py-3 border-2 border-slate-200 text-slate-700 rounded-xl font-bold text-center hover:bg-slate-50 hover:border-slate-300 transition-all">
                         View Details
                       </Link>
-                      <Link href={`/packages/${pkg.slug}#book`} className="py-3 bg-primary text-white rounded-xl font-bold text-center hover:bg-primary/90 shadow-md shadow-primary/20 transition-all">
+                      <Link href={pkg.category?.name === "Trekking" ? `/trekking/${pkg.slug}#book` : `/packages/${pkg.slug}#book`} className="py-3 bg-primary text-white rounded-xl font-bold text-center hover:bg-primary/90 shadow-md shadow-primary/20 transition-all">
                         Book Now
                       </Link>
                     </div>
