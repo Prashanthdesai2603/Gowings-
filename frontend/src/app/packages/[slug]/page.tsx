@@ -737,7 +737,7 @@ export default function PackageDetailsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Phone</label>
-                  <input name="phone" type="tel" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-colors font-medium text-slate-800" placeholder="+91 98765 43210" />
+                  <input name="phone" type="tel" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-colors font-medium text-slate-800" placeholder="+91 9108620564" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Message</label>

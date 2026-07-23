@@ -24,7 +24,7 @@ export default function FloatingActions() {
   };
 
   const handleWhatsApp = () => {
-    window.open(`https://wa.me/919876543210?text=${encodeURIComponent("Hi Gowings, I need some help planning my trip!")}`, '_blank');
+    window.open(`https://wa.me/919108620564?text=${encodeURIComponent("Hi Gowings, I need some help planning my trip!")}`, '_blank');
   };
 
   return (

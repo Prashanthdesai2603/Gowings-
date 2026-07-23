@@ -118,7 +118,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                    <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="+91 98765 43210" />
+                    <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="+91 9108620564" />
                   </div>
                 </div>
 

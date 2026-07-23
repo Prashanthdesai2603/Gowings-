@@ -196,7 +196,7 @@ export default function Navbar() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 font-medium">Call us anytime</p>
-                      <p className="font-bold text-gray-800">+91 98765 43210</p>
+                      <p className="font-bold text-gray-800">+91 9108620564</p>
                     </div>
                   </div>
 
